@@ -1,0 +1,34 @@
+services:
+  publishing-postgres:
+    container_name: publishing-postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: mike
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: publishing
+      PGDATA: /data/postgres
+    volumes:
+      - publishing-postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - publishing-postgres
+    restart: unless-stopped
+  publishing-spring:
+    container_name: publishing-spring
+    image: misharyduk/publishing
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - publishing-postgres
+    depends_on:
+      - publishing-postgres
+
+networks:
+  publishing-postgres:
+    driver: bridge
+
+volumes:
+  publishing-postgres:

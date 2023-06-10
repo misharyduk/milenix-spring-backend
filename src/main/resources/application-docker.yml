@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://publishing-postgres:5432/publishing
+    username: mike
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+      show-sql: true
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2KB
+      max-file-size: 200MB
+      max-request-size: 215MB
+  mvc:
+    throwExceptionIfNoHandlerFound: true
+
+file:
+  upload-dir-article: static/images/article-images
+  upload-dir-user: static/images/user-images
+
+openai:
+  api_key: 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
