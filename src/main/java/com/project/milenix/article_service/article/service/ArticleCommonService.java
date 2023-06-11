@@ -27,6 +27,7 @@ public abstract class ArticleCommonService {
     private UserController userController;
 
     protected EntityArticleResponseDto mapToArticleDTO(Article article) {
+
         return EntityArticleResponseDto.builder()
                 .id(article.getId())
                 .title(article.getTitle())
@@ -37,9 +38,10 @@ public abstract class ArticleCommonService {
                 .minutesToRead(article.getMinutesToRead())
                 .numberOfViews(article.getNumberOfViews())
                 .numberOfLikes(article.getNumberOfLikes())
-                .category(article.getCategory())
-                .author(article.getAuthor())
+                .category(new CategoryResponseDto(article.getCategory()))
+                .author(new UserResponseDto(article.getAuthor()))
                 .build();
+
     }
 
     protected List<EntityArticleResponseDto> getListOfArticleDTOS(List<Article> articles) {
@@ -50,36 +52,36 @@ public abstract class ArticleCommonService {
             }
         }
 
-        Map<Integer, CategoryResponseDto> categories = getMapWithCategoryIds(articles);
+//        Map<Integer, CategoryResponseDto> categories = getMapWithCategoryIds(articles);
 
-        var authors = getMapWithUserIds(articles);
+//        var authors = getMapWithUserIds(articles);
 
         return articles.stream()
-                .peek(article -> article.setCategory(categories.get(article.getCategoryId())))
-                .peek(article -> article.setAuthor(authors.get(article.getAuthorId())))
+//                .peek(article -> article.setCategory(categories.get(article.getCategoryId())))
+//                .peek(article -> article.setAuthor(authors.get(article.getAuthorId())))
                 .map(this::mapToArticleDTO)
                 .collect(Collectors.toList());
     }
 
-    protected Map<Integer, UserResponseDto> getMapWithUserIds(List<Article> articles) {
-        List<Integer> authorIds = new ArrayList<>();
-        Map<Integer, UserResponseDto> collect = articles.stream()
-                .filter(article -> !authorIds.contains(article.getAuthorId()))
-                .peek(article -> authorIds.add(article.getAuthorId()))
-                .map(article -> userDevController.getUserResponse(article.getAuthorId()))
-                .collect(Collectors.toMap(UserResponseDto::getId, Function.identity()));
-        Set<Map.Entry<Integer, UserResponseDto>> entries = collect.entrySet();
-        return collect;
-    }
+//    protected Map<Integer, UserResponseDto> getMapWithUserIds(List<Article> articles) {
+//        List<Integer> authorIds = new ArrayList<>();
+//        Map<Integer, UserResponseDto> collect = articles.stream()
+//                .filter(article -> !authorIds.contains(article.getAuthorId()))
+//                .peek(article -> authorIds.add(article.getAuthorId()))
+//                .map(article -> userDevController.getUserResponse(article.getAuthorId()))
+//                .collect(Collectors.toMap(UserResponseDto::getId, Function.identity()));
+//        Set<Map.Entry<Integer, UserResponseDto>> entries = collect.entrySet();
+//        return collect;
+//    }
 
-    protected Map<Integer, CategoryResponseDto> getMapWithCategoryIds(List<Article> articles) {
-        List<Integer> categoriesIds = new ArrayList<>();
-        return articles.stream()
-                .filter(article -> !categoriesIds.contains(article.getCategoryId()))
-                .peek(article -> categoriesIds.add(article.getCategoryId()))
-                .map(article -> categoryDevController.getCategoryResponse(article.getCategoryId()))
-                .map(categoryResponseDto -> CategoryResponseDto.builder().id(categoryResponseDto.getId()).name(categoryResponseDto.getName()).build())
-                .collect(Collectors.toMap(CategoryResponseDto::getId, Function.identity()));
-    }
+//    protected Map<Integer, CategoryResponseDto> getMapWithCategoryIds(List<Article> articles) {
+//        List<Integer> categoriesIds = new ArrayList<>();
+//        return articles.stream()
+//                .filter(article -> !categoriesIds.contains(article.getCategoryId()))
+//                .peek(article -> categoriesIds.add(article.getCategoryId()))
+//                .map(article -> categoryDevController.getCategoryResponse(article.getCategoryId()))
+//                .map(categoryResponseDto -> CategoryResponseDto.builder().id(categoryResponseDto.getId()).name(categoryResponseDto.getName()).build())
+//                .collect(Collectors.toMap(CategoryResponseDto::getId, Function.identity()));
+//    }
 
 }

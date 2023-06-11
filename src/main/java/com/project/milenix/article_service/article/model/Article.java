@@ -1,7 +1,9 @@
 package com.project.milenix.article_service.article.model;
 
 import com.project.milenix.category_service.category.dto.CategoryResponseDto;
+import com.project.milenix.category_service.category.model.Category;
 import com.project.milenix.user_service.user.dto.UserResponseDto;
+import com.project.milenix.user_service.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 import net.minidev.json.annotate.JsonIgnore;
@@ -35,22 +37,22 @@ public class Article {
     private LocalDateTime publishingDate;
     @Column
     private Integer minutesToRead;
-    @Column
-    @JsonIgnore
-    private Integer authorId;
-    @Column
-    @JsonIgnore
-    private Integer categoryId;
+//    @Column
+//    @JsonIgnore
+//    private Integer authorId;
+//    @Column
+//    @JsonIgnore
+//    private Integer categoryId;
     @Column(columnDefinition = "integer not null default 0")
     private Integer numberOfViews = 0;
     @Column(columnDefinition = "integer not null default 0")
     private Integer numberOfLikes = 0;
-    @Transient
-    private UserResponseDto author;
-    @Transient
-    private CategoryResponseDto category;
-    @Transient
-    private String imagesDir;
+    @ManyToOne
+    private User author;
+    @ManyToOne
+    private Category category;
+//    @Transient
+//    private String imagesDir;
 
     public String getImagesDir(){
         return "images/article-images/" + getId();

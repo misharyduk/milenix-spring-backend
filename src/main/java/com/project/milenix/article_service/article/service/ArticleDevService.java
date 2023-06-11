@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ArticleDevService {
+public class ArticleDevService { // TODO: why not to extends ArticleCommonService?
 
     private final ArticlePaginationParametersValidator paramsValidator;
     private final ArticleRepository articleRepository;
@@ -52,8 +52,8 @@ public class ArticleDevService {
                     if(article.getContent().length() > 255)
                         article.setContent(article.getContent().substring(0, 255) + "...");
                 })
-                .peek(article -> article.setAuthor(userDevService.getUserResponse(article.getAuthorId())))
-                .peek(article -> article.setCategory(category))
+//                .peek(article -> article.setAuthor(userDevService.getUserResponse(article.getAuthorId())))
+//                .peek(article -> article.setCategory(category))
                 .collect(Collectors.toList());
 
         List<EntityArticleResponseDto> articleDtos = getListOfArticle(articles);
@@ -90,8 +90,8 @@ public class ArticleDevService {
                 .minutesToRead(article.getMinutesToRead())
                 .numberOfViews(article.getNumberOfViews())
                 .numberOfLikes(article.getNumberOfLikes())
-                .author(article.getAuthor())
-                .category(article.getCategory())
+                .author(new UserResponseDto(article.getAuthor()))
+                .category(new CategoryResponseDto(article.getCategory()))
                 .build();
     }
 
@@ -102,7 +102,7 @@ public class ArticleDevService {
 
         Sort.Direction direction = Sort.Direction.valueOf(params.getDirection());
 
-        UserResponseDto user = userDevService.getUserResponse(userId);
+//        UserResponseDto user = userDevService.getUserResponse(userId);
 
         Page<Article> pageOfArticles = articleRepository.findAllByAuthorId(
                 userId,
@@ -113,8 +113,8 @@ public class ArticleDevService {
                     if(article.getContent().length() > 255)
                         article.setContent(article.getContent().substring(0, 255)  + "...");
                 })
-                .peek(article -> article.setCategory(categoryDevService.getCategoryResponse(article.getCategoryId())))
-                .peek(article -> article.setAuthor(user))
+//                .peek(article -> article.setCategory(categoryDevService.getCategoryResponse(article.getCategoryId())))
+//                .peek(article -> article.setAuthor(user))
                 .collect(Collectors.toList());
 
         List<EntityArticleResponseDto> articleDtos = getListOfArticle(articles);
@@ -137,7 +137,7 @@ public class ArticleDevService {
                 .mapToInt(Like::getArticleId)
                 .toArray();
 
-        UserResponseDto user = userDevService.getUserResponse(userId);
+//        UserResponseDto user = userDevService.getUserResponse(userId);
 
         List<Article> articles = new ArrayList<>();
 
@@ -149,10 +149,10 @@ public class ArticleDevService {
             articles.add(foundArticle);
         }
 
-        articles = articles.stream()
-                .peek(article -> article.setAuthor(user))
-                .peek(article -> article.setCategory(categoryDevService.getCategoryResponse(article.getCategoryId())))
-                .collect(Collectors.toList());
+//        articles = articles.stream()
+//                .peek(article -> article.setAuthor(user))
+//                .peek(article -> article.setCategory(categoryDevService.getCategoryResponse(article.getCategoryId())))
+//                .collect(Collectors.toList());
 
         List<EntityArticleResponseDto> articleDtos = getListOfArticle(articles);
 
@@ -186,10 +186,10 @@ public class ArticleDevService {
             articles.add(foundArticle);
         }
 
-        articles = articles.stream()
-                .peek(article -> article.setAuthor(user))
-                .peek(article -> article.setCategory(categoryDevService.getCategoryResponse(article.getCategoryId())))
-                .collect(Collectors.toList());
+//        articles = articles.stream()
+//                .peek(article -> article.setAuthor(user))
+//                .peek(article -> article.setCategory(categoryDevService.getCategoryResponse(article.getCategoryId())))
+//                .collect(Collectors.toList());
 
         List<EntityArticleResponseDto> articleDtos = getListOfArticle(articles);
 

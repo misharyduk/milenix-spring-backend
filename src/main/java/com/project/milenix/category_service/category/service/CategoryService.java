@@ -2,6 +2,7 @@ package com.project.milenix.category_service.category.service;
 
 import com.project.milenix.article_service.article.controller.ArticleDevController;
 import com.project.milenix.article_service.article.dto.ArticlePageResponseDto;
+import com.project.milenix.article_service.article.service.ArticleDevService;
 import com.project.milenix.category_service.category.dto.CategoryRequestDto;
 import com.project.milenix.category_service.category.dto.EntityCategoryResponseDto;
 import com.project.milenix.category_service.category.dto.LetterSortingCategoriesDto;
@@ -26,7 +27,7 @@ public class CategoryService extends CategoryCommonService{
 
   private final CategoryRepository categoryRepository;
   private final CategoryPaginationParametersValidator paramsValidator;
-  private final ArticleDevController articleDevController;
+  private final ArticleDevService articleDevService;
 
   public List<EntityCategoryResponseDto> findCategoriesWithSorting(String field, String dirVal){
 
@@ -62,12 +63,18 @@ public class CategoryService extends CategoryCommonService{
     foundCategoryInDb.setName(categoryRequestDto.getName());
     checkNameForUnique(foundCategoryInDb.getName());
     Category updatedCategory = categoryRepository.save(foundCategoryInDb);
-    updatedCategory.setPage(articleDevController.getArticleResponsesByCategoryWithPagination(
-            id,
-            PaginationParameters.builder()
-                    .page(1).pageSize(10).field("numberOfViews").direction("asc").build()
-    ));
-    return mapToDto(updatedCategory);
+
+//    updatedCategory.setPage();
+//    return mapToDto(updatedCategory);
+    return EntityCategoryResponseDto.builder()
+            .id(updatedCategory.getId())
+            .name(updatedCategory.getName())
+            .page(articleDevService.getArticlesPageByCategory(
+                    id,
+                    PaginationParameters.builder()
+                            .page(1).pageSize(10).field("numberOfViews").direction("asc").build()
+            ))
+            .build();
   }
 
   public boolean deleteCategoryById(Integer id) throws CategoryException {
@@ -81,7 +88,7 @@ public class CategoryService extends CategoryCommonService{
 
   private List<EntityCategoryResponseDto> getListOfCategoryDTOS(List<Category> categories){
     return categories.stream()
-            .peek(category -> category.setPage(articleDevController.getArticleResponsesByCategoryWithPagination(
+            .peek(category -> category.setPage(articleDevService.getArticlesPageByCategory(
                     category.getId(),
                     PaginationParameters.builder()
                             .page(1).pageSize(10).field("numberOfViews").direction("asc").build()
@@ -97,7 +104,7 @@ public class CategoryService extends CategoryCommonService{
       Category category = categoryRepository.findById(id)
               .orElseThrow(() -> new CategoryException(String.format("Category with id %d cannot be found", id)));
 
-      ArticlePageResponseDto articlesOfCategory = articleDevController.getArticleResponsesByCategoryWithPagination(id, params);
+      ArticlePageResponseDto articlesOfCategory = articleDevService.getArticlesPageByCategory(id, params);
 
       category.setPage(articlesOfCategory);
       return mapToDto(category);

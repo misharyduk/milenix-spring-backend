@@ -58,6 +58,11 @@ public class UserDevService {
         return savedUser.getId();
     }
 
+    public User getUser(Integer id) throws CustomUserException {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new CustomUserException("Cannot find user"));
+    }
+
     private void checkEmailForUnique(String email) throws EmailNotUniqueException {
         if(userRepository.findByEmail(email).isPresent()){
             throw new EmailNotUniqueException(String.format("User with email %s is already registered", email));

@@ -29,8 +29,8 @@ public class User {
     private String password;
     private String role;
     private String image;
-    @Transient
 //    private List<EntityArticleResponseDto> articles = new ArrayList<>();
+    @Transient
     private ArticlePageResponseDto page;
 
 }
