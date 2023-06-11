@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CategoryPaginationService extends CategoryCommonService{
+public class CategoryPaginationService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryPaginationParametersValidator paramsValidator;
@@ -53,7 +53,7 @@ public class CategoryPaginationService extends CategoryCommonService{
                         PaginationParameters.builder()
                                 .page(1).pageSize(10).field("numberOfViews").direction("asc").build()
                 )))
-                .map(this::mapToDto)
+                .map(EntityCategoryResponseDto::new)
                 .collect(Collectors.toList());
     }
 }

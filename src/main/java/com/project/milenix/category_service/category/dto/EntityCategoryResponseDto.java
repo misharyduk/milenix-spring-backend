@@ -21,5 +21,6 @@ public class EntityCategoryResponseDto {
     public EntityCategoryResponseDto(Category category){
         this.id = category.getId();
         this.name = category.getName();
+        this.page = category.getPage();
     }
 }

@@ -10,9 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class UserServiceCommon {
@@ -21,17 +19,6 @@ public abstract class UserServiceCommon {
     private ArticleDevService articleDevService;
     @Autowired
     private UserFileStorageProperties properties;
-
-    protected Map<String, String> toMap(PaginationParameters params){
-        return new HashMap<>(){
-            {
-                this.put("page", String.valueOf(params.getPage()));
-                this.put("pageSize", String.valueOf(params.getPageSize()));
-                this.put("field", params.getField());
-                this.put("direction", params.getDirection());
-            }
-        };
-    }
 
     protected EntityUserResponseDto mapToDto(User user) {
         String imagePath = properties.getUploadDir() + File.separator + user.getId() + File.separator + user.getImage();

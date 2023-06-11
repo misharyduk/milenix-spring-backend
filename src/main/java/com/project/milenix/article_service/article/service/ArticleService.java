@@ -11,9 +11,7 @@ import com.project.milenix.PaginationParameters;
 import com.project.milenix.article_service.article.dto.EntityArticleResponseDto;
 import com.project.milenix.article_service.exception.ArticleException;
 import com.project.milenix.article_service.util.ArticlePaginationParametersValidator;
-import com.project.milenix.category_service.category.service.CategoryDevService;
 import com.project.milenix.category_service.category.service.CategoryService;
-import com.project.milenix.user_service.user.service.UserDevService;
 import com.project.milenix.user_service.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,9 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,24 +34,17 @@ public class ArticleService extends ArticleCommonService{
   private final LikeRepository likeRepository;
   private final BookmarkRepository bookmarkRepository;
   private final ArticlePaginationParametersValidator paramsValidator;
-  private final UserDevService userDevService;
   private final UserService userService;
   private final CategoryService categoryService;
-  private final CategoryDevService categoryDevService;
 
   public EntityArticleResponseDto getArticle(Integer id) throws ArticleException{
     // TODO: handle exception
     Article article = articleRepository.findById(id)
             .orElseThrow(() -> new ArticleException(String.format("Article with id %d cannot be found", id)));
 
-//    CategoryResponseDto categoryResponseDto = categoryDevController.getCategoryResponse(article.getCategoryId());
-//    UserResponseDto userResponseDto = userDevController.getUserResponse(article.getAuthorId());
-//    article.setCategory(categoryResponseDto);
-//    article.setAuthor(userResponseDto);
-
     articleRepository.increaseViewsById(id);
 
-    return mapToArticleDTO(article);
+    return new EntityArticleResponseDto(article);
   }
 
   public List<EntityArticleResponseDto> getAllArticles(){
@@ -67,13 +56,8 @@ public class ArticleService extends ArticleCommonService{
       }
     }
 
-//    Map<Integer, CategoryResponseDto> categories = getMapWithCategoryIds(articles);
-
-//    var authors = getMapWithUserIds(articles);
-
-    //    return getListOfArticleDTOS(articles);
     return articles.stream()
-            .map(this::mapToArticleDTO)
+            .map(EntityArticleResponseDto::new)
             .collect(Collectors.toList());
   }
 
@@ -103,8 +87,8 @@ public class ArticleService extends ArticleCommonService{
               .publishingDate(LocalDateTime.now())
               .numberOfLikes(0)
               .numberOfViews(0)
-              .author(userDevService.getUser(articleRequestDto.getAuthorId()))
-              .category(categoryDevService.getCategory(articleRequestDto.getCategoryId()))
+              .author(userService.getUser(articleRequestDto.getAuthorId()))
+              .category(categoryService.getCategory(articleRequestDto.getCategoryId()))
               .build();
       Article savedArticle = articleRepository.save(article);
       return savedArticle.getId();
@@ -120,7 +104,7 @@ public class ArticleService extends ArticleCommonService{
         .orElseThrow(() -> new ArticleException(String.format("Article with id %d cannot be found", id)));
 
     if(articleRequestDto == null) // TODO: how can this happen?
-      return mapToArticleDTO(foundArticleInDb);
+      return new EntityArticleResponseDto(foundArticleInDb);
 
     if(articleRequestDto.getTitle() != null)
       foundArticleInDb.setTitle(articleRequestDto.getTitle());
@@ -132,21 +116,16 @@ public class ArticleService extends ArticleCommonService{
 
     try {
       if (articleRequestDto.getAuthorId() != null)
-        foundArticleInDb.setAuthor(userDevService.getUser(articleRequestDto.getAuthorId()));
+        foundArticleInDb.setAuthor(userService.getUser(articleRequestDto.getAuthorId()));
       if (articleRequestDto.getCategoryId() != null)
-        foundArticleInDb.setCategory(categoryDevService.getCategory(articleRequestDto.getCategoryId()));
+        foundArticleInDb.setCategory(categoryService.getCategory(articleRequestDto.getCategoryId()));
     } catch (Exception e){
       throw new RuntimeException("Cannot save category");
     }
 
     Article updatedArticle = articleRepository.save(foundArticleInDb); // TODO: do we really need this?
-//
-//    CategoryResponseDto categoryResponseDto = categoryDevController.getCategoryResponse(updatedArticle.getCategoryId());
-//    UserResponseDto userResponseDto = userDevController.getUserResponse(updatedArticle.getAuthorId());
-//    updatedArticle.setCategory(categoryResponseDto);
-//    updatedArticle.setAuthor(userResponseDto);
 
-    return mapToArticleDTO(updatedArticle);
+    return new EntityArticleResponseDto(updatedArticle);
   }
 
   public void deleteArticle(Integer id) throws ArticleException{
@@ -177,8 +156,6 @@ public class ArticleService extends ArticleCommonService{
   }
 
   public List<EntityArticleResponseDto> findHotArticles(PaginationParameters params, Integer size) {
-
-    Sort.Direction direction = Sort.Direction.valueOf(params.getDirection());
 
     Page<Article> pageOfArticles = articleRepository.searchHotArticles("number_of_views", size,
             PageRequest.of(0, Integer.MAX_VALUE).withSort(Sort.by(Sort.Direction.DESC, "number_of_views")));

@@ -24,6 +24,11 @@ public class UserService extends UserServiceCommon {
     private final ArticleDevService articleDevService;
     private final UserPaginationParametersValidator paramsValidator;
 
+    public User getUser(Integer id) throws CustomUserException {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new CustomUserException("Cannot find user"));
+    }
+
     public EntityUserResponseDto getUserById(Integer id, PaginationParameters paginationParameters) throws CustomUserException {
 
         paginationParameters.setField(paramsValidator.getCorrectValue(paginationParameters.getField()).getHqlField());

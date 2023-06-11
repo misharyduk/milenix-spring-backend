@@ -10,11 +10,6 @@ import com.project.milenix.article_service.article.repo.ArticleRepository;
 import com.project.milenix.article_service.article.repo.BookmarkRepository;
 import com.project.milenix.article_service.article.repo.LikeRepository;
 import com.project.milenix.article_service.util.ArticlePaginationParametersValidator;
-//import com.project.milenix.category_service.category.dto.CategoryResponseDto;
-import com.project.milenix.category_service.category.dto.EntityCategoryResponseDto;
-import com.project.milenix.category_service.category.service.CategoryDevService;
-import com.project.milenix.user_service.user.dto.EntityUserResponseDto;
-import com.project.milenix.user_service.user.service.UserDevService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,8 +28,6 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
     private final ArticleRepository articleRepository;
     private final LikeRepository likeRepository;
     private final BookmarkRepository bookmarkRepository;
-    private final UserDevService userDevService;
-    private final CategoryDevService categoryDevService;
 
     public ArticlePageResponseDto getArticlesPageByCategory(Integer categoryId, PaginationParameters params) {
 
@@ -51,11 +44,9 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
                     if(article.getContent().length() > 255)
                         article.setContent(article.getContent().substring(0, 255) + "...");
                 })
-//                .peek(article -> article.setAuthor(userDevService.getUserResponse(article.getAuthorId())))
-//                .peek(article -> article.setCategory(category))
                 .collect(Collectors.toList());
 
-        List<EntityArticleResponseDto> articleDtos = getListOfArticle(articles);
+        List<EntityArticleResponseDto> articleDtos = getListOfArticleDtos(articles);
 
         return ArticlePageResponseDto.builder()
                 .totalElements(pageOfArticles.getTotalElements())
@@ -63,34 +54,6 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
                 .page(params.getPage())
                 .pageSize(params.getPageSize())
                 .articles(articleDtos)
-                .build();
-    }
-
-    private List<EntityArticleResponseDto> getListOfArticle(List<Article> articles) {
-        for (Article article : articles) {
-            if (article.getMainImagePath() != null) {
-                article.setMainImagePath("article-images/" + article.getId() + "/" + article.getMainImagePath());
-            }
-        }
-
-        return articles.stream()
-                .map(this::mapToArticleDTO)
-                .collect(Collectors.toList());
-    }
-
-    protected EntityArticleResponseDto mapToArticleDTO(Article article) {
-        return EntityArticleResponseDto.builder()
-                .id(article.getId())
-                .title(article.getTitle())
-                .content(article.getContent())
-                .mainImagePath(article.getMainImagePath())
-                .imagesDir(article.getImagesDir())
-                .publishingDate(article.getPublishingDate())
-                .minutesToRead(article.getMinutesToRead())
-                .numberOfViews(article.getNumberOfViews())
-                .numberOfLikes(article.getNumberOfLikes())
-                .author(new EntityUserResponseDto(article.getAuthor()))
-                .category(new EntityCategoryResponseDto(article.getCategory()))
                 .build();
     }
 
@@ -101,8 +64,6 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
 
         Sort.Direction direction = Sort.Direction.valueOf(params.getDirection());
 
-//        UserResponseDto user = userDevService.getUserResponse(userId);
-
         Page<Article> pageOfArticles = articleRepository.findAllByAuthorId(
                 userId,
                 PageRequest.of(params.getPage() - 1, params.getPageSize()).withSort(Sort.by(direction, params.getField())));
@@ -112,11 +73,9 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
                     if(article.getContent().length() > 255)
                         article.setContent(article.getContent().substring(0, 255)  + "...");
                 })
-//                .peek(article -> article.setCategory(categoryDevService.getCategoryResponse(article.getCategoryId())))
-//                .peek(article -> article.setAuthor(user))
                 .collect(Collectors.toList());
 
-        List<EntityArticleResponseDto> articleDtos = getListOfArticle(articles);
+        List<EntityArticleResponseDto> articleDtos = getListOfArticleDtos(articles);
 
         return ArticlePageResponseDto.builder()
                 .totalElements(pageOfArticles.getTotalElements())
@@ -126,6 +85,7 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
                 .articles(articleDtos)
                 .build();
     }
+
 
     public ArticlePageResponseDto getLikedArticlesPageByUser(Integer userId, PaginationParameters params) {
 
@@ -146,8 +106,7 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
             articles.add(foundArticle);
         }
 
-
-        List<EntityArticleResponseDto> articleDtos = getListOfArticle(articles);
+        List<EntityArticleResponseDto> articleDtos = getListOfArticleDtos(articles);
 
         return ArticlePageResponseDto.builder()
                 .totalElements(pageOfLikes.getTotalElements())
@@ -177,7 +136,7 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
             articles.add(foundArticle);
         }
 
-        List<EntityArticleResponseDto> articleDtos = getListOfArticle(articles);
+        List<EntityArticleResponseDto> articleDtos = getListOfArticleDtos(articles);
 
         return ArticlePageResponseDto.builder()
                 .totalElements(pageOfBookmarks.getTotalElements())
@@ -189,5 +148,17 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
     }
 
 
+    private List<EntityArticleResponseDto> getListOfArticleDtos(List<Article> articles) {
+
+        for (Article article : articles) {
+            if (article.getMainImagePath() != null) {
+                article.setMainImagePath("article-images/" + article.getId() + "/" + article.getMainImagePath());
+            }
+        }
+
+        return articles.stream()
+                .map(EntityArticleResponseDto::new)
+                .collect(Collectors.toList());
+    }
 
 }

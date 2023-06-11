@@ -12,6 +12,7 @@ import com.project.milenix.PaginationParameters;
 import com.project.milenix.category_service.exception.CategoryException;
 import com.project.milenix.category_service.exception.NameNotUniqueException;
 import com.project.milenix.category_service.util.CategoryPaginationParametersValidator;
+import com.project.milenix.user_service.exception.CustomUserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -22,11 +23,16 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CategoryService extends CategoryCommonService{
+public class CategoryService {
 
   private final CategoryRepository categoryRepository;
   private final CategoryPaginationParametersValidator paramsValidator;
   private final ArticleDevService articleDevService;
+
+  public Category getCategory(Integer id) throws CustomUserException {
+    return categoryRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Cannot find category"));
+  }
 
   public List<EntityCategoryResponseDto> findCategoriesWithSorting(String field, String dirVal){
 
@@ -57,7 +63,7 @@ public class CategoryService extends CategoryCommonService{
             () -> new CategoryException(String.format("Category with id %d cannot be found", id)));
 
     if(categoryRequestDto == null || categoryRequestDto.getName().isBlank())
-      return mapToDto(foundCategoryInDb);
+      return new EntityCategoryResponseDto(foundCategoryInDb);
 
     foundCategoryInDb.setName(categoryRequestDto.getName());
     checkNameForUnique(foundCategoryInDb.getName());
@@ -92,7 +98,7 @@ public class CategoryService extends CategoryCommonService{
                     PaginationParameters.builder()
                             .page(1).pageSize(10).field("numberOfViews").direction("asc").build()
             )))
-            .map(this::mapToDto)
+            .map(EntityCategoryResponseDto::new)
             .collect(Collectors.toList());
   }
 
@@ -106,7 +112,7 @@ public class CategoryService extends CategoryCommonService{
       ArticlePageResponseDto articlesOfCategory = articleDevService.getArticlesPageByCategory(id, params);
 
       category.setPage(articlesOfCategory);
-      return mapToDto(category);
+      return new EntityCategoryResponseDto(category);
     }
 
   public List<LetterSortingCategoriesDto> getCategoriesDividedByLetters() {
