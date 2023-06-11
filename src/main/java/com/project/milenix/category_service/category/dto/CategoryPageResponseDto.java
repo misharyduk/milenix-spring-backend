@@ -9,7 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CategoryPageResponseDto {
+public class CategoryPageResponseDto { // MAIN RESPONSE DTO FOR LIST OF CATEGORIES
     private Long totalElements;
     private Integer totalPages;
     private List<EntityCategoryResponseDto> categories;

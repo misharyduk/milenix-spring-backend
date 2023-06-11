@@ -1,7 +1,7 @@
 package com.project.milenix.user_service.user.service;
 
 import com.project.milenix.PaginationParameters;
-import com.project.milenix.article_service.article.controller.ArticleDevController;
+import com.project.milenix.article_service.article.service.ArticleDevService;
 import com.project.milenix.user_service.user.dto.*;
 import com.project.milenix.user_service.exception.CustomUserException;
 import com.project.milenix.user_service.exception.EmailNotUniqueException;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class UserService extends UserServiceCommon {
 
     private final UserRepository userRepository;
-    private final ArticleDevController articleDevController;
+    private final ArticleDevService articleDevService;
     private final UserPaginationParametersValidator paramsValidator;
 
     public EntityUserResponseDto getUserById(Integer id, PaginationParameters paginationParameters) throws CustomUserException {
@@ -32,19 +32,10 @@ public class UserService extends UserServiceCommon {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new CustomUserException("User is not found"));
 
-        UserResponseDto userDto = UserResponseDto.builder()
-                .id(id)
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .build();
-
-        user.setPage(articleDevController.getArticleResponsesByUserWithPagination(
+        user.setPage(articleDevService.getArticlesPageByAuthor(
                 id,
                 paginationParameters
         ));
-
-        user.getPage().getArticles()
-                .forEach(article -> article.setAuthor(userDto));
 
         return mapToDto(user);
     }
@@ -53,20 +44,11 @@ public class UserService extends UserServiceCommon {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomUserException("User is not found"));
 
-        UserResponseDto userDto = UserResponseDto.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .build();
-
-        user.setPage(articleDevController.getArticleResponsesByUserWithPagination(
+        user.setPage(articleDevService.getArticlesPageByAuthor(
                 user.getId(),
                 PaginationParameters.builder()
                         .page(1).pageSize(10).field("numberOfViews").direction("asc").build()
         ));
-
-        user.getPage().getArticles()
-                .forEach(article -> article.setAuthor(userDto));
 
         return mapToDto(user);
     }
@@ -76,7 +58,7 @@ public class UserService extends UserServiceCommon {
         List<User> users = userRepository.findAll();
 
         return users.stream()
-                .peek(user -> user.setPage(articleDevController.getArticleResponsesByUserWithPagination(
+                .peek(user -> user.setPage(articleDevService.getArticlesPageByAuthor(
                         user.getId(),
                         PaginationParameters.builder()
                                 .page(1).pageSize(10).field("numberOfViews").direction("asc").build()
@@ -94,7 +76,7 @@ public class UserService extends UserServiceCommon {
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
 
         return userRepository.findAll(Sort.by(direction, field)).stream()
-                .peek(user -> user.setPage(articleDevController.getArticleResponsesByUserWithPagination(
+                .peek(user -> user.setPage(articleDevService.getArticlesPageByAuthor(
                         user.getId(),
                         PaginationParameters.builder()
                                 .page(1).pageSize(10).field("numberOfViews").direction("asc").build()
@@ -149,7 +131,7 @@ public class UserService extends UserServiceCommon {
 
         userRepository.saveAndFlush(fetchedUser);
 
-        fetchedUser.setPage(articleDevController.getArticleResponsesByUserWithPagination(
+        fetchedUser.setPage(articleDevService.getArticlesPageByAuthor(
                 fetchedUser.getId(),
                 PaginationParameters.builder()
                         .page(1).pageSize(10).field("numberOfViews").direction("asc").build()
@@ -176,7 +158,7 @@ public class UserService extends UserServiceCommon {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new CustomUserException(String.format("User with id %d cannot be found", id)));
 
-        user.setPage(articleDevController.getLikedArticlesByUserWithPagination(
+        user.setPage(articleDevService.getLikedArticlesPageByUser(
                 id,
                 paginationParameters
         ));
@@ -192,7 +174,7 @@ public class UserService extends UserServiceCommon {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new CustomUserException(String.format("User with id %d cannot be found", id)));
 
-        user.setPage(articleDevController.getBookmarkedArticlesByUserWithPagination(
+        user.setPage(articleDevService.getBookmarkedArticlesPageByUser(
                 id,
                 paginationParameters
         ));

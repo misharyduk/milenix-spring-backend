@@ -1,8 +1,6 @@
 package com.project.milenix.article_service.article.model;
 
-import com.project.milenix.category_service.category.dto.CategoryResponseDto;
 import com.project.milenix.category_service.category.model.Category;
-import com.project.milenix.user_service.user.dto.UserResponseDto;
 import com.project.milenix.user_service.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;

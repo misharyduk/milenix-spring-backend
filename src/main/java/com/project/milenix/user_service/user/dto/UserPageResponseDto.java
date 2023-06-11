@@ -9,7 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserPageResponseDto {
+public class UserPageResponseDto { // MAIN RESPONSE DTO FOR LIST OF USERS
     private Long totalElements;
     private Integer totalPages;
     private Integer page;

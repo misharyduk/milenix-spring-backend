@@ -1,7 +1,7 @@
 package com.project.milenix.user_service.user.service;
 
 import com.project.milenix.PaginationParameters;
-import com.project.milenix.article_service.article.controller.ArticleDevController;
+import com.project.milenix.article_service.article.service.ArticleDevService;
 import com.project.milenix.user_service.user.dto.EntityUserResponseDto;
 import com.project.milenix.user_service.user.dto.UserPageResponseDto;
 import com.project.milenix.user_service.user.model.User;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class UserSearchService extends UserServiceCommon{
 
     private final UserRepository userRepository;
-    private final ArticleDevController articleDevController;
+    private final ArticleDevService articleDevService;
     private final UserPaginationParametersValidator paramsValidator;
 
     public List<EntityUserResponseDto> searchUsers(String value, String fieldVal, String dirVal){
@@ -38,7 +38,7 @@ public class UserSearchService extends UserServiceCommon{
         field = paramsValidator.getCorrectValue(field).getHqlField();
 
         return userRepository.searchUsers(value, Sort.by(direction, field)).stream()
-                .peek(user -> user.setPage(articleDevController.getArticleResponsesByUserWithPagination(
+                .peek(user -> user.setPage(articleDevService.getArticlesPageByAuthor(
                         user.getId(),
                         PaginationParameters.builder()
                                 .page(1).pageSize(10).field("numberOfViews").direction("asc").build())))

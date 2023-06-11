@@ -1,6 +1,6 @@
 package com.project.milenix.category_service.category.service;
 
-import com.project.milenix.article_service.article.controller.ArticleDevController;
+import com.project.milenix.article_service.article.service.ArticleDevService;
 import com.project.milenix.category_service.category.dto.CategoryPageResponseDto;
 import com.project.milenix.category_service.category.dto.EntityCategoryResponseDto;
 import com.project.milenix.category_service.category.model.Category;
@@ -23,7 +23,7 @@ public class CategorySearchService extends CategoryCommonService{
 
     private final CategoryRepository categoryRepository;
     private final CategoryPaginationParametersValidator paramsValidator;
-    private final ArticleDevController articleDevController;
+    private final ArticleDevService articleDevService;
 
     public List<EntityCategoryResponseDto> searchCategories(String value, String fieldVal, String dirVal){
 
@@ -40,7 +40,7 @@ public class CategorySearchService extends CategoryCommonService{
 
 
         return categoryRepository.searchCategories(value, Sort.by(direction, field)).stream()
-                .peek(category -> category.setPage(articleDevController.getArticleResponsesByCategoryWithPagination(
+                .peek(category -> category.setPage(articleDevService.getArticlesPageByCategory(
                         category.getId(),
                         PaginationParameters.builder()
                                 .page(1).pageSize(10).field("numberOfViews").direction("asc").build()
@@ -63,7 +63,7 @@ public class CategorySearchService extends CategoryCommonService{
                 value, PageRequest.of(params.getPage() - 1, params.getPageSize()).withSort(direction, params.getField()));
 
         List<EntityCategoryResponseDto> categories = categoriesPage.stream()
-                .peek(category -> category.setPage(articleDevController.getArticleResponsesByCategoryWithPagination(
+                .peek(category -> category.setPage(articleDevService.getArticlesPageByCategory(
                         category.getId(),
                         PaginationParameters.builder()
                                 .page(1).pageSize(10).field("numberOfViews").direction("asc").build()

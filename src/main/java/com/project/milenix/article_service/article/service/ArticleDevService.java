@@ -10,9 +10,10 @@ import com.project.milenix.article_service.article.repo.ArticleRepository;
 import com.project.milenix.article_service.article.repo.BookmarkRepository;
 import com.project.milenix.article_service.article.repo.LikeRepository;
 import com.project.milenix.article_service.util.ArticlePaginationParametersValidator;
-import com.project.milenix.category_service.category.dto.CategoryResponseDto;
+//import com.project.milenix.category_service.category.dto.CategoryResponseDto;
+import com.project.milenix.category_service.category.dto.EntityCategoryResponseDto;
 import com.project.milenix.category_service.category.service.CategoryDevService;
-import com.project.milenix.user_service.user.dto.UserResponseDto;
+import com.project.milenix.user_service.user.dto.EntityUserResponseDto;
 import com.project.milenix.user_service.user.service.UserDevService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,8 +45,6 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
         Page<Article> pageOfArticles = articleRepository.findAllByCategoryId(
                 categoryId,
                 PageRequest.of(params.getPage() - 1, params.getPageSize()).withSort(Sort.by(direction, params.getField())));
-
-        CategoryResponseDto category = categoryDevService.getCategoryResponse(categoryId);
 
         List<Article> articles = pageOfArticles.stream()
                 .peek(article -> {
@@ -90,8 +89,8 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
                 .minutesToRead(article.getMinutesToRead())
                 .numberOfViews(article.getNumberOfViews())
                 .numberOfLikes(article.getNumberOfLikes())
-                .author(new UserResponseDto(article.getAuthor()))
-                .category(new CategoryResponseDto(article.getCategory()))
+                .author(new EntityUserResponseDto(article.getAuthor()))
+                .category(new EntityCategoryResponseDto(article.getCategory()))
                 .build();
     }
 
@@ -137,8 +136,6 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
                 .mapToInt(Like::getArticleId)
                 .toArray();
 
-//        UserResponseDto user = userDevService.getUserResponse(userId);
-
         List<Article> articles = new ArrayList<>();
 
         for(Integer articleId : articleIds) {
@@ -149,10 +146,6 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
             articles.add(foundArticle);
         }
 
-//        articles = articles.stream()
-//                .peek(article -> article.setAuthor(user))
-//                .peek(article -> article.setCategory(categoryDevService.getCategoryResponse(article.getCategoryId())))
-//                .collect(Collectors.toList());
 
         List<EntityArticleResponseDto> articleDtos = getListOfArticle(articles);
 
@@ -174,8 +167,6 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
                 .mapToInt(Bookmark::getArticleId)
                 .toArray();
 
-        UserResponseDto user = userDevService.getUserResponse(userId);
-
         List<Article> articles = new ArrayList<>();
 
         for(Integer articleId : articleIds) {
@@ -185,11 +176,6 @@ public class ArticleDevService { // TODO: why not to extends ArticleCommonServic
                 foundArticle.setContent(foundArticle.getContent().substring(0, 255)  + "...");
             articles.add(foundArticle);
         }
-
-//        articles = articles.stream()
-//                .peek(article -> article.setAuthor(user))
-//                .peek(article -> article.setCategory(categoryDevService.getCategoryResponse(article.getCategoryId())))
-//                .collect(Collectors.toList());
 
         List<EntityArticleResponseDto> articleDtos = getListOfArticle(articles);
 

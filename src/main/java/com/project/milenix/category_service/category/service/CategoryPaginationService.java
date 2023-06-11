@@ -1,6 +1,6 @@
 package com.project.milenix.category_service.category.service;
 
-import com.project.milenix.article_service.article.controller.ArticleDevController;
+import com.project.milenix.article_service.article.service.ArticleDevService;
 import com.project.milenix.category_service.category.dto.CategoryPageResponseDto;
 import com.project.milenix.category_service.category.dto.EntityCategoryResponseDto;
 import com.project.milenix.category_service.category.model.Category;
@@ -22,7 +22,7 @@ public class CategoryPaginationService extends CategoryCommonService{
 
     private final CategoryRepository categoryRepository;
     private final CategoryPaginationParametersValidator paramsValidator;
-    private final ArticleDevController articleDevController;
+    private final ArticleDevService articleDevService;
 
     public CategoryPageResponseDto findCategoriesWithPaginationAndSorting(PaginationParameters params){
 
@@ -48,7 +48,7 @@ public class CategoryPaginationService extends CategoryCommonService{
 
     private List<EntityCategoryResponseDto> getListOfCategoryDTOS(List<Category> categories){
         return categories.stream()
-                .peek(category -> category.setPage(articleDevController.getArticleResponsesByCategoryWithPagination(
+                .peek(category -> category.setPage(articleDevService.getArticlesPageByCategory(
                         category.getId(),
                         PaginationParameters.builder()
                                 .page(1).pageSize(10).field("numberOfViews").direction("asc").build()

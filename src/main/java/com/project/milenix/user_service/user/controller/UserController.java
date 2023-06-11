@@ -24,6 +24,7 @@ public class UserController {
 
   private final UserService userService;
 
+  // FETCHING USERS
   @GetMapping()
   @ResponseStatus(HttpStatus.OK)
   public List<EntityUserResponseDto> getAllUsers(){
@@ -32,16 +33,17 @@ public class UserController {
 
   @GetMapping("{id}")
   @ResponseStatus(HttpStatus.OK)
-  public EntityUserResponseDto getUser(@PathVariable("id") Integer id) throws CustomUserException {
+  public EntityUserResponseDto getUserById(@PathVariable("id") Integer id) throws CustomUserException {
     return userService.getUserById(id, PaginationParameters.builder().field("numberOfViews").build());
   }
 
   @GetMapping(params = "email")
   @ResponseStatus(HttpStatus.OK)
-  public EntityUserResponseDto getByEmail(@RequestParam("email") String email) throws CustomUserException {
+  public EntityUserResponseDto getUserByEmail(@RequestParam("email") String email) throws CustomUserException {
     return userService.getUserByEmail(email);
   }
 
+  // ALTERING USER
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public Integer saveUser(@Valid UserRequestDto user,
@@ -83,6 +85,7 @@ public class UserController {
     return userService.deleteUser(id);
   }
 
+  // SORTING
   @GetMapping(params = {"field", "direction"})
   @ResponseStatus(HttpStatus.OK)
   public List<EntityUserResponseDto> findUsersWithSort(
@@ -91,6 +94,7 @@ public class UserController {
     return userService.findUsersWithSort(field, direction);
   }
 
+  // USER'S ARTICLES
   @GetMapping("{id}/articles")
   @ResponseStatus(HttpStatus.OK)
   public EntityUserResponseDto getUserArticles(@PathVariable("id") Integer id,
@@ -98,6 +102,7 @@ public class UserController {
     return userService.getUserById(id, paginationParameters);
   }
 
+  // LIKES AND BOOKMARKS
   @GetMapping("{id}/articles/likes")
   @ResponseStatus(HttpStatus.OK)
   public EntityUserResponseDto getUserArticlesLike(@PathVariable("id") Integer id,

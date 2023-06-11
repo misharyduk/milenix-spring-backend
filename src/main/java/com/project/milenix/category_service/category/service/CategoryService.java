@@ -1,6 +1,5 @@
 package com.project.milenix.category_service.category.service;
 
-import com.project.milenix.article_service.article.controller.ArticleDevController;
 import com.project.milenix.article_service.article.dto.ArticlePageResponseDto;
 import com.project.milenix.article_service.article.service.ArticleDevService;
 import com.project.milenix.category_service.category.dto.CategoryRequestDto;
@@ -9,7 +8,7 @@ import com.project.milenix.category_service.category.dto.LetterSortingCategories
 import com.project.milenix.category_service.category.model.Category;
 import com.project.milenix.category_service.category.repo.CategoryRepository;
 import com.project.milenix.PaginationParameters;
-import com.project.milenix.category_service.category.dto.CategoryResponseDto;
+//import com.project.milenix.category_service.category.dto.CategoryResponseDto;
 import com.project.milenix.category_service.exception.CategoryException;
 import com.project.milenix.category_service.exception.NameNotUniqueException;
 import com.project.milenix.category_service.util.CategoryPaginationParametersValidator;
@@ -118,12 +117,12 @@ public class CategoryService extends CategoryCommonService{
 
 
     for(int i = 0; i < sourceList.size(); i++) {
-      List<CategoryResponseDto> categoryResponseDtoList = new ArrayList<>();
+      List<EntityCategoryResponseDto> categoryResponseDtoList = new ArrayList<>();
       char letter = sourceList.get(i).getName().charAt(0);
       for(int j = i; j < sourceList.size(); j++){
         Category currentCategory = sourceList.get(j);
         if(currentCategory.getName().charAt(0) == letter){
-          categoryResponseDtoList.add(new CategoryResponseDto(currentCategory.getId(), currentCategory.getName()));
+          categoryResponseDtoList.add(new EntityCategoryResponseDto(currentCategory));
         } else {
           i = j - 1;
           break;

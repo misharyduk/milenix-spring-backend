@@ -3,11 +3,11 @@ package com.project.milenix.article_service.article.service;
 import com.project.milenix.article_service.article.model.Article;
 import com.project.milenix.article_service.article.dto.EntityArticleResponseDto;
 
-import com.project.milenix.category_service.category.controller.CategoryDevController;
-import com.project.milenix.category_service.category.dto.CategoryResponseDto;
+//import com.project.milenix.category_service.category.dto.CategoryResponseDto;
+import com.project.milenix.category_service.category.dto.EntityCategoryResponseDto;
 import com.project.milenix.user_service.user.controller.UserController;
-import com.project.milenix.user_service.user.controller.UserDevController;
-import com.project.milenix.user_service.user.dto.UserResponseDto;
+//import com.project.milenix.user_service.user.dto.UserResponseDto;
+import com.project.milenix.user_service.user.dto.EntityUserResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -19,10 +19,6 @@ import java.util.stream.Collectors;
 
 public abstract class ArticleCommonService {
 
-    @Autowired
-    private CategoryDevController categoryDevController;
-    @Autowired
-    private UserDevController userDevController;
     @Autowired
     private UserController userController;
 
@@ -38,8 +34,8 @@ public abstract class ArticleCommonService {
                 .minutesToRead(article.getMinutesToRead())
                 .numberOfViews(article.getNumberOfViews())
                 .numberOfLikes(article.getNumberOfLikes())
-                .category(new CategoryResponseDto(article.getCategory()))
-                .author(new UserResponseDto(article.getAuthor()))
+                .category(new EntityCategoryResponseDto(article.getCategory()))
+                .author(new EntityUserResponseDto(article.getAuthor()))
                 .build();
 
     }
