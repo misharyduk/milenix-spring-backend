@@ -1,14 +1,20 @@
 package com.project.milenix.authentication_service.config;
 
+import com.project.milenix.authentication_service.filter.AuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -32,6 +38,9 @@ public class SecurityConfig {
     public SecurityFilterChain configure(HttpSecurity http) throws Exception{
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .addFilter(new AuthenticationFilter(authenticationManager()))
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
 //                .anonymous().and()
 //                .authorizeHttpRequests((requests) -> requests
 //                        .requestMatchers("/api/v1/articles/hot/**").permitAll()
@@ -42,11 +51,25 @@ public class SecurityConfig {
                         "/api/v1/articles/search", "/api/v1/categories/**",
                         "/api/v1/categories/pagination", "/api/v1/categories/search/**",
                         "/api/v1/users/**", "/api/v1/users/pagination", "/api/v1/users/search").permitAll()
-                .anyRequest().authenticated()
-                .and()
+                .requestMatchers(POST, "/login/**").permitAll()
+                .anyRequest().authenticated();
+//                .and()
 //                .httpBasic(Customizer.withDefaults());
-                .httpBasic();
+//                .httpBasic();
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(){
+        return new ProviderManager(authenticationProvider());
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider(){
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService());
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
     }
 
     @Bean
