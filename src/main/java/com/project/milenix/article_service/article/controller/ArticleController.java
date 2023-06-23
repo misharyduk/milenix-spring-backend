@@ -10,6 +10,7 @@ import com.project.milenix.file.service.ArticleFileStorageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +27,7 @@ public class ArticleController {
   private final TagService tagService;
 
   @GetMapping
+  @PreAuthorize("hasAuthority('article:read:all')")
   @ResponseStatus(HttpStatus.OK)
   public List<EntityArticleResponseDto> getAllArticles(){
     return articleService.getAllArticles();
@@ -39,6 +41,7 @@ public class ArticleController {
   }
 
   @PostMapping
+  @PreAuthorize("hasAuthority('article:add')")
   @ResponseStatus(HttpStatus.CREATED)
   public Integer saveArticle(@Valid ArticleRequestDto articleRequestDto,
                              @RequestParam("mainImage")MultipartFile mainImage,
@@ -61,6 +64,7 @@ public class ArticleController {
   }
 
   @PutMapping("{id}")
+  @PreAuthorize("hasAuthority('article:update')") // TODO: check use in SecurityConfig
   @ResponseStatus(HttpStatus.OK)
   public EntityArticleResponseDto updateArticle(@PathVariable("id") Integer id, @RequestParam(required = false) ArticleRequestDto articleRequestDto,
                                                 @RequestParam(value = "mainImage", required = false)MultipartFile file,
@@ -88,6 +92,7 @@ public class ArticleController {
   }
 
   @DeleteMapping("{id}")
+  @PreAuthorize("hasAuthority('article:delete')") // TODO: check use in SecurityConfig
   @ResponseStatus(HttpStatus.OK)
   public void deleteArticle(@PathVariable("id") Integer id) throws ArticleException {
     // TODO: handle exception
@@ -96,6 +101,7 @@ public class ArticleController {
   }
 
   @GetMapping(params = {"field"})
+  @PreAuthorize("hasAuthority('article:read:all')")
   @ResponseStatus(HttpStatus.OK)
   public List<EntityArticleResponseDto> getArticlesWithSort(
                                     @RequestParam(value = "field") String field,
@@ -104,6 +110,7 @@ public class ArticleController {
   }
 
   @PostMapping("{articleId}/like")
+  @PreAuthorize("hasAuthority('article:like')")
   @ResponseStatus(HttpStatus.OK)
   public void likeArticle(@PathVariable("articleId") Integer articleId,
                           @RequestParam("userId") Integer userId){
@@ -111,6 +118,7 @@ public class ArticleController {
   }
 
   @PostMapping("{articleId}/bookmark")
+  @PreAuthorize("hasAuthority('article:bookmark')")
   @ResponseStatus(HttpStatus.OK)
   public void bookmarkArticle(@PathVariable("articleId") Integer articleId,
                           @RequestParam("userId") Integer userId){
@@ -118,6 +126,7 @@ public class ArticleController {
   }
 
   @DeleteMapping("{articleId}/like")
+  @PreAuthorize("hasAuthority('article:like')")
   @ResponseStatus(HttpStatus.OK)
   public void deleteLikeArticle(@PathVariable("articleId") Integer articleId,
                           @RequestParam("userId") Integer userId){
@@ -125,6 +134,7 @@ public class ArticleController {
   }
 
   @DeleteMapping("{articleId}/bookmark")
+  @PreAuthorize("hasAuthority('article:bookmark')")
   @ResponseStatus(HttpStatus.OK)
   public void deleteBookmarkArticle(@PathVariable("articleId") Integer articleId,
                               @RequestParam("userId") Integer userId) {

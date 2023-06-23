@@ -6,6 +6,7 @@ import com.project.milenix.article_service.article.service.ArticleSearchService;
 import com.project.milenix.article_service.article.dto.EntityArticleResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class ArticleSearchController {
     private final ArticleSearchService articleSearchService;
 
     @GetMapping(path = "all")
+    @PreAuthorize("hasAuthority('article:read:all')")
     @ResponseStatus(HttpStatus.OK)
     public List<EntityArticleResponseDto> searchArticles(@RequestParam("value") String value,
                                                          @RequestParam(value = "field", required = false) String field,

@@ -10,6 +10,7 @@ import com.project.milenix.category_service.exception.NameNotUniqueException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,12 +36,14 @@ public class CategoryController {
   }
 
   @PostMapping
+  @PreAuthorize("hasAuthority('category:add')")
   @ResponseStatus(HttpStatus.CREATED)
   public Integer saveCategory(@RequestBody @Valid CategoryRequestDto categoryRequestDto) throws NameNotUniqueException {
     return categoryService.saveCategory(categoryRequestDto);
   }
 
   @PutMapping("{id}")
+  @PreAuthorize("hasAuthority('category:update')")
   @ResponseStatus(HttpStatus.OK)
   public EntityCategoryResponseDto updateCategory(@PathVariable("id") Integer id, @RequestBody(required = false) CategoryRequestDto categoryRequestDto)
           throws CategoryException, NameNotUniqueException {
@@ -48,6 +51,7 @@ public class CategoryController {
   }
 
   @DeleteMapping("{id}")
+  @PreAuthorize("hasAuthority('category:delete')")
   @ResponseStatus(HttpStatus.OK)
   public boolean deleteCategory(@PathVariable("id") Integer id) throws CategoryException {
     return categoryService.deleteCategoryById(id);

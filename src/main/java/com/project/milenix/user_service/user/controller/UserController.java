@@ -10,6 +10,7 @@ import com.project.milenix.user_service.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,7 +26,8 @@ public class UserController {
   private final UserService userService;
 
   // FETCHING USERS
-  @GetMapping()
+  @GetMapping
+  @PreAuthorize("hasAuthority('user:read:all')")
   @ResponseStatus(HttpStatus.OK)
   public List<EntityUserResponseDto> getAllUsers(){
     return userService.getAllUsers();
@@ -45,6 +47,7 @@ public class UserController {
 
   // ALTERING USER
   @PostMapping
+  @PreAuthorize("hasAuthority('user:add')")
   @ResponseStatus(HttpStatus.CREATED)
   public Integer saveUser(@Valid UserRequestDto user,
                           @RequestParam(value = "image", required = false)MultipartFile image) throws EmailNotUniqueException {
@@ -54,6 +57,7 @@ public class UserController {
   }
 
   @PutMapping("{id}")
+  @PreAuthorize("hasAuthority('user:update')")
   @ResponseStatus(HttpStatus.OK)
   public EntityUserResponseDto updateUser(@PathVariable("id") Integer id, @RequestParam(required = false) UserRequestDto user,
                                           @RequestParam(value = "image", required = false)MultipartFile image) throws CustomUserException, EmailNotUniqueException {
@@ -66,7 +70,8 @@ public class UserController {
     return entityUserResponseDto;
   }
 
-  @PutMapping("{id}/info")
+  @PutMapping("{id}/info") // TODO: do we really need this api?
+  @PreAuthorize("hasAuthority('user:update')")
   @ResponseStatus(HttpStatus.OK)
   public EntityUserResponseDto completeUser(@PathVariable("id") Integer id,
                                           @RequestParam(value = "image", required = false)MultipartFile image) throws CustomUserException, EmailNotUniqueException {
@@ -80,6 +85,7 @@ public class UserController {
   }
 
   @DeleteMapping("{id}")
+  @PreAuthorize("hasAuthority('user:delete')")
   @ResponseStatus(HttpStatus.OK)
   public boolean deleteUser(@PathVariable("id") Integer id) throws CustomUserException {
     return userService.deleteUser(id);
@@ -87,6 +93,7 @@ public class UserController {
 
   // SORTING
   @GetMapping(params = {"field", "direction"})
+  @PreAuthorize("hasAuthority('user:read:all')")
   @ResponseStatus(HttpStatus.OK)
   public List<EntityUserResponseDto> findUsersWithSort(
                                 @RequestParam(value = "field") String field,
@@ -104,14 +111,16 @@ public class UserController {
 
   // LIKES AND BOOKMARKS
   @GetMapping("{id}/articles/likes")
-  @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAuthority('article:like')")
+  @ResponseStatus(HttpStatus.OK) // TODO: Check for user
   public EntityUserResponseDto getUserArticlesLike(@PathVariable("id") Integer id,
                                                    PaginationParameters paginationParameters) throws CustomUserException {
     return userService.getUserWithLikedArticles(id, paginationParameters);
   }
 
   @GetMapping("{id}/articles/bookmarks")
-  @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAuthority('article:bookmark')")
+  @ResponseStatus(HttpStatus.OK) // TODO: Check for user
   public EntityUserResponseDto getUserArticlesBookmarks(@PathVariable("id") Integer id,
                                                    PaginationParameters paginationParameters) throws CustomUserException {
     return userService.getUserWithBookmarkedArticles(id, paginationParameters);

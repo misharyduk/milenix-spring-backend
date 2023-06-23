@@ -6,6 +6,7 @@ import com.project.milenix.user_service.user.dto.UserPageResponseDto;
 import com.project.milenix.user_service.user.service.UserSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class UserSearchController {
     private final UserSearchService userSearchService;
 
     @GetMapping("all")
+    @PreAuthorize("hasAuthority('user:read:all')")
     @ResponseStatus(HttpStatus.OK)
     public List<EntityUserResponseDto> searchUser(@RequestParam("value") String value,
                                                   @RequestParam(value = "field", required = false) String field,
