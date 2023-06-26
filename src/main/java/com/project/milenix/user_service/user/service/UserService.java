@@ -106,7 +106,32 @@ public class UserService extends UserServiceCommon {
                 .collect(Collectors.toList());
     }
 
-    public Integer saveUser(UserRequestDto userRequest, String imageName) throws EmailNotUniqueException, UsernameNotUniqueException {
+    public Integer saveUser(UserRequestDto userRequest, String role, String imageName) throws EmailNotUniqueException, UsernameNotUniqueException {
+
+        // TODO if password is not easy
+        User user = User.builder()
+                .username(userRequest.getUsername())
+                .firstName(userRequest.getFirstName())
+                .lastName(userRequest.getLastName())
+                .email(userRequest.getEmail())
+                .password(passwordEncoder.encode(userRequest.getPassword()))
+                .image(imageName)
+                .role(role == null ? "USER" : role.toUpperCase())
+                .isAccountNonExpired(true) // TODO these things should be after email verification
+                .isAccountNonLocked(true)
+                .isCredentialsNonExpired(true)
+                .isEnabled(true)
+                .build();
+
+        checkEmailForUnique(user.getEmail());
+        checkUsernameForUnique(user.getUsername());
+
+        User savedUser = userRepository.save(user);
+
+        return savedUser.getId();
+    }
+
+    public Integer registerUser(UserRequestDto userRequest, String imageName) throws EmailNotUniqueException, UsernameNotUniqueException {
 
         // TODO if password is not easy
         User user = User.builder()
@@ -117,10 +142,10 @@ public class UserService extends UserServiceCommon {
                 .password(passwordEncoder.encode(userRequest.getPassword()))
                 .image(imageName)
                 .role("USER")
-                .isAccountNonExpired(true) // TODO these things should be after email verification
-                .isAccountNonLocked(true)
-                .isCredentialsNonExpired(true)
-                .isEnabled(true)
+                .isAccountNonExpired(false) // TODO these things should be after email verification
+                .isAccountNonLocked(false)
+                .isCredentialsNonExpired(false)
+                .isEnabled(false)
                 .build();
 
         checkEmailForUnique(user.getEmail());

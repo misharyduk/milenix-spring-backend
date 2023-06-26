@@ -54,7 +54,7 @@ public class SecurityConfig {
                         "/api/v1/articles/search", "/api/v1/categories/**",
                         "/api/v1/categories/pagination", "/api/v1/categories/search/**",
                         "/api/v1/users/**", "/api/v1/users/pagination", "/api/v1/users/search").permitAll()
-                .requestMatchers(POST, "/login/**", "/api/v1/auth/token/refresh/**").permitAll()
+                .requestMatchers(POST, "/login/**", "/api/v1/auth/token/refresh/**", "/api/v1/auth/register/**").permitAll()
                 .anyRequest().authenticated();
 //                .and()
 //                .httpBasic(Customizer.withDefaults());

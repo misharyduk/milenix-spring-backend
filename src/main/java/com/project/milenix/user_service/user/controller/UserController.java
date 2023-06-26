@@ -56,9 +56,9 @@ public class UserController {
   @PostMapping
   @PreAuthorize("hasAuthority('user:add')")
   @ResponseStatus(HttpStatus.CREATED)
-  public Integer saveUser(@Valid UserRequestDto user,
+  public Integer saveUser(@Valid UserRequestDto user, @RequestParam(value = "role", required = false) String role,
                           @RequestParam(value = "image", required = false)MultipartFile image) throws EmailNotUniqueException, UsernameNotUniqueException {
-    Integer userId = userService.saveUser(user, image.getOriginalFilename());
+    Integer userId = userService.saveUser(user, role, image.getOriginalFilename());
     String fileName = fileStorageService.storeFile(userId, image);
     return userId;
   }

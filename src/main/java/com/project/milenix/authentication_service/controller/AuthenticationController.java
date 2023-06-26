@@ -2,6 +2,11 @@ package com.project.milenix.authentication_service.controller;
 
 import com.google.common.base.Strings;
 import com.project.milenix.authentication_service.dto.UsernamePasswordDto;
+import com.project.milenix.file.service.UserFileStorageService;
+import com.project.milenix.user_service.exception.EmailNotUniqueException;
+import com.project.milenix.user_service.exception.UsernameNotUniqueException;
+import com.project.milenix.user_service.user.dto.UserRequestDto;
+import com.project.milenix.user_service.user.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -18,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.SecretKey;
 import java.util.*;
@@ -32,6 +38,19 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 public class AuthenticationController {
 
   private final UserDetailsService userDetailsService;
+  private final UserService userService;
+  private final UserFileStorageService fileStorageService;
+
+  @PostMapping("register")
+  @ResponseStatus(HttpStatus.OK)
+  public Integer register(@Valid UserRequestDto user,
+                          @RequestParam(value = "image", required = false) MultipartFile image) throws EmailNotUniqueException, UsernameNotUniqueException {
+    Integer userId = userService.registerUser(user, image.getOriginalFilename());
+    String fileName = fileStorageService.storeFile(userId, image);
+    return userId;
+  }
+
+
 
   @PostMapping("token/refresh")
   @ResponseStatus(HttpStatus.OK)
