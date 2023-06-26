@@ -14,6 +14,8 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Integer> {
   Optional<User> findByEmail(String email);
 
+  Optional<User> findByUsername(String username);
+
   @Query(value = "SELECT u FROM app_user u WHERE u.firstName " +
                  "iLIKE CONCAT('%', :value, '%') " +
                  "OR u.lastName iLIKE CONCAT('%', :value, '%')")

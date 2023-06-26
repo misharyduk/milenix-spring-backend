@@ -2,6 +2,7 @@ package com.project.milenix.user_service.user.controller;
 
 import com.project.milenix.PaginationParameters;
 import com.project.milenix.file.service.UserFileStorageService;
+import com.project.milenix.user_service.exception.UsernameNotUniqueException;
 import com.project.milenix.user_service.user.dto.UserRequestDto;
 import com.project.milenix.user_service.exception.CustomUserException;
 import com.project.milenix.user_service.exception.EmailNotUniqueException;
@@ -39,6 +40,12 @@ public class UserController {
     return userService.getUserById(id, PaginationParameters.builder().field("numberOfViews").build());
   }
 
+  @GetMapping(params = "username")
+  @ResponseStatus(HttpStatus.OK)
+  public EntityUserResponseDto getUserByUsername(@RequestParam("username") String username) throws CustomUserException {
+    return userService.getUserByUsername(username);
+  }
+
   @GetMapping(params = "email")
   @ResponseStatus(HttpStatus.OK)
   public EntityUserResponseDto getUserByEmail(@RequestParam("email") String email) throws CustomUserException {
@@ -50,7 +57,7 @@ public class UserController {
   @PreAuthorize("hasAuthority('user:add')")
   @ResponseStatus(HttpStatus.CREATED)
   public Integer saveUser(@Valid UserRequestDto user,
-                          @RequestParam(value = "image", required = false)MultipartFile image) throws EmailNotUniqueException {
+                          @RequestParam(value = "image", required = false)MultipartFile image) throws EmailNotUniqueException, UsernameNotUniqueException {
     Integer userId = userService.saveUser(user, image.getOriginalFilename());
     String fileName = fileStorageService.storeFile(userId, image);
     return userId;

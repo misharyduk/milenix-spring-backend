@@ -34,6 +34,7 @@ import static com.project.milenix.authentication_service.model.AppAuthority.*;
 public class SecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
+    private final UserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain configure(HttpSecurity http) throws Exception{
@@ -69,31 +70,31 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider(){
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService());
+        provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(){
-        UserDetails linda = User.builder()
-                .username("linda")
-                .password(passwordEncoder.encode("password"))
-                .authorities(USER.getGranterAuthorities())
-                .build();
-
-        UserDetails tom = User.builder()
-                .username("tom")
-                .password(passwordEncoder.encode("password"))
-                .authorities(ADMIN.getGranterAuthorities())
-                .build();
-
-        UserDetails nick = User.builder()
-                .username("nick")
-                .password(passwordEncoder.encode("password"))
-                .authorities(MODERATOR.getGranterAuthorities())
-                .build();
-
-        return new InMemoryUserDetailsManager(linda, tom, nick);
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService(){
+//        UserDetails linda = User.builder()
+//                .username("linda")
+//                .password(passwordEncoder.encode("password"))
+//                .authorities(USER.getGranterAuthorities())
+//                .build();
+//
+//        UserDetails tom = User.builder()
+//                .username("tom")
+//                .password(passwordEncoder.encode("password"))
+//                .authorities(ADMIN.getGranterAuthorities())
+//                .build();
+//
+//        UserDetails nick = User.builder()
+//                .username("nick")
+//                .password(passwordEncoder.encode("password"))
+//                .authorities(MODERATOR.getGranterAuthorities())
+//                .build();
+//
+//        return new InMemoryUserDetailsManager(linda, tom, nick);
+//    }
 }

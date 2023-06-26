@@ -15,6 +15,7 @@ import java.io.File;
 @Builder
 public class EntityUserResponseDto { // MAIN RESPONSE DTO FOR INDIVIDUAL USER
     private Integer id;
+    private String username;
     private String firstName;
     private String lastName;
     private String email;
@@ -24,6 +25,7 @@ public class EntityUserResponseDto { // MAIN RESPONSE DTO FOR INDIVIDUAL USER
 
     public EntityUserResponseDto(User user){
         this.id = user.getId();
+        this.username = user.getUsername();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.email = user.getEmail();

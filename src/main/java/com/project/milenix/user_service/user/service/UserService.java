@@ -2,6 +2,7 @@ package com.project.milenix.user_service.user.service;
 
 import com.project.milenix.PaginationParameters;
 import com.project.milenix.article_service.article.service.ArticleDevService;
+import com.project.milenix.user_service.exception.UsernameNotUniqueException;
 import com.project.milenix.user_service.user.dto.*;
 import com.project.milenix.user_service.exception.CustomUserException;
 import com.project.milenix.user_service.exception.EmailNotUniqueException;
@@ -10,6 +11,7 @@ import com.project.milenix.user_service.user.repo.UserRepository;
 import com.project.milenix.user_service.util.UserPaginationParametersValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,6 +25,7 @@ public class UserService extends UserServiceCommon {
     private final UserRepository userRepository;
     private final ArticleDevService articleDevService;
     private final UserPaginationParametersValidator paramsValidator;
+    private final PasswordEncoder passwordEncoder;
 
     public User getUser(Integer id) throws CustomUserException {
         return userRepository.findById(id)
@@ -40,6 +43,19 @@ public class UserService extends UserServiceCommon {
         user.setPage(articleDevService.getArticlesPageByAuthor(
                 id,
                 paginationParameters
+        ));
+
+        return mapToDto(user);
+    }
+
+    public EntityUserResponseDto getUserByUsername(String username) throws CustomUserException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new CustomUserException("User is not found"));
+
+        user.setPage(articleDevService.getArticlesPageByAuthor(
+                user.getId(),
+                PaginationParameters.builder()
+                        .page(1).pageSize(10).field("numberOfViews").direction("asc").build()
         ));
 
         return mapToDto(user);
@@ -90,19 +106,25 @@ public class UserService extends UserServiceCommon {
                 .collect(Collectors.toList());
     }
 
-    public Integer saveUser(UserRequestDto userRequest, String imageName) throws EmailNotUniqueException {
+    public Integer saveUser(UserRequestDto userRequest, String imageName) throws EmailNotUniqueException, UsernameNotUniqueException {
 
         // TODO if password is not easy
         User user = User.builder()
+                .username(userRequest.getUsername())
                 .firstName(userRequest.getFirstName())
                 .lastName(userRequest.getLastName())
                 .email(userRequest.getEmail())
-                .password(userRequest.getPassword())
+                .password(passwordEncoder.encode(userRequest.getPassword()))
                 .image(imageName)
                 .role("USER")
+                .isAccountNonExpired(true) // TODO these things should be after email verification
+                .isAccountNonLocked(true)
+                .isCredentialsNonExpired(true)
+                .isEnabled(true)
                 .build();
 
         checkEmailForUnique(user.getEmail());
+        checkUsernameForUnique(user.getUsername());
 
         User savedUser = userRepository.save(user);
 
@@ -190,6 +212,12 @@ public class UserService extends UserServiceCommon {
     private void checkEmailForUnique(String email) throws EmailNotUniqueException {
         if(userRepository.findByEmail(email).isPresent()){
             throw new EmailNotUniqueException(String.format("User with email %s is already registered", email));
+        }
+    }
+
+    private void checkUsernameForUnique(String username) throws UsernameNotUniqueException {
+        if(userRepository.findByUsername(username).isPresent()){
+            throw new UsernameNotUniqueException(String.format("User with username %s is already registered", username));
         }
     }
 

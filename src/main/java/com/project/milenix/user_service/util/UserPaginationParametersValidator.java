@@ -11,6 +11,7 @@ public class UserPaginationParametersValidator {
 
     public enum UserFields {
         ID(Lists.newArrayList("id", "ID"), "id"),
+        USERNAME(Lists.newArrayList("username", "user_name", "USERNAME", "USER_NAME"), "username"),
         FIRST_NAME(Lists.newArrayList("first_name", "FIRST_NAME", "firstname", "FIRSTNAME",
                 "NAME"), "firstName"),
         LAST_NAME(Lists.newArrayList("last_name", "LAST_NAME", "lastname", "LASTNAME"), "lastName"),

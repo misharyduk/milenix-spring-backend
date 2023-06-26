@@ -24,6 +24,7 @@ public abstract class UserServiceCommon {
         String imagePath = properties.getUploadDir() + File.separator + user.getId() + File.separator + user.getImage();
         return EntityUserResponseDto.builder()
                 .id(user.getId())
+                .username(user.getUsername())
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
