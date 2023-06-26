@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -55,7 +56,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                 .setSubject(authResult.getName())
                 .claim("authorities", authResult.getAuthorities())
                 .setIssuedAt(new Date())
-                .setExpiration(java.sql.Date.valueOf(LocalDateTime.now().plusHours(3).toLocalDate()))
+                .setExpiration(new Date(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(3)))
                 .compact();
 
         String jwtRefreshToken = Jwts.builder()
@@ -63,7 +64,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                 .setIssuer(request.getContextPath())
                 .setSubject(authResult.getName())
                 .setIssuedAt(new Date())
-                .setExpiration(java.sql.Date.valueOf(LocalDateTime.now().plusDays(14).toLocalDate()))
+                .setExpiration(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14)))
                 .compact();
 
         Map<String, String> tokens = new HashMap<>();
