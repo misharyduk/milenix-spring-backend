@@ -1,6 +1,7 @@
 package com.project.milenix.authentication_service.config;
 
 import com.project.milenix.authentication_service.filter.AuthenticationFilter;
+import com.project.milenix.authentication_service.filter.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +40,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilter(new AuthenticationFilter(authenticationManager()))
+                .addFilterAfter(new JwtFilter(), AuthenticationFilter.class)
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
 //                .anonymous().and()
@@ -51,7 +53,7 @@ public class SecurityConfig {
                         "/api/v1/articles/search", "/api/v1/categories/**",
                         "/api/v1/categories/pagination", "/api/v1/categories/search/**",
                         "/api/v1/users/**", "/api/v1/users/pagination", "/api/v1/users/search").permitAll()
-                .requestMatchers(POST, "/login/**").permitAll()
+                .requestMatchers(POST, "/login/**", "/api/v1/auth/token/refresh/**").permitAll()
                 .anyRequest().authenticated();
 //                .and()
 //                .httpBasic(Customizer.withDefaults());
