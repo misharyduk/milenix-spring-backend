@@ -12,7 +12,7 @@ import static com.project.milenix.authentication_service.model.AppAuthority.*;
 
 public enum AppRole {
     USER(Sets.newHashSet(
-            ARTICLE_READ, /*ARTICLE_ADD, ARTICLE_UPDATE, ARTICLE_DELETE,*/
+            ARTICLE_READ, ARTICLE_ADD, /*ARTICLE_UPDATE, ARTICLE_DELETE,*/
             USER_READ,
 //            USER_UPDATE, USER_DELETE,
             CATEGORY_READ, CATEGORY_READ_ALL

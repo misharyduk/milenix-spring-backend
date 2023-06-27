@@ -11,8 +11,10 @@ import com.project.milenix.PaginationParameters;
 import com.project.milenix.article_service.article.dto.EntityArticleResponseDto;
 import com.project.milenix.article_service.exception.ArticleException;
 import com.project.milenix.article_service.util.ArticlePaginationParametersValidator;
+import com.project.milenix.authentication_service.util.JwtUtil;
 import com.project.milenix.category_service.category.service.CategoryService;
 import com.project.milenix.user_service.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -73,7 +75,7 @@ public class ArticleService extends ArticleCommonService{
     return getListOfArticleDTOS(articles);
   }
 
-  public Integer saveArticle(ArticleRequestDto articleRequestDto, String fileName) {
+  public Integer saveArticle(ArticleRequestDto articleRequestDto, Integer userId, String fileName) {
 
     long numberOfWords = articleRequestDto.getContent().split(" ").length;
     int minutesToRead = (int) Math.ceil(numberOfWords / 200.0);
@@ -87,7 +89,7 @@ public class ArticleService extends ArticleCommonService{
               .publishingDate(LocalDateTime.now())
               .numberOfLikes(0)
               .numberOfViews(0)
-              .author(userService.getUser(articleRequestDto.getAuthorId()))
+              .author(userService.getUser(userId))
               .category(categoryService.getCategory(articleRequestDto.getCategoryId()))
               .build();
       Article savedArticle = articleRepository.save(article);
@@ -115,8 +117,6 @@ public class ArticleService extends ArticleCommonService{
 
 
     try {
-      if (articleRequestDto.getAuthorId() != null)
-        foundArticleInDb.setAuthor(userService.getUser(articleRequestDto.getAuthorId()));
       if (articleRequestDto.getCategoryId() != null)
         foundArticleInDb.setCategory(categoryService.getCategory(articleRequestDto.getCategoryId()));
     } catch (Exception e){
@@ -137,21 +137,25 @@ public class ArticleService extends ArticleCommonService{
     articleRepository.delete(foundArticleInDb);
   }
 
-  public void likeArticle(Integer articleId, Integer userId) {
-      likeRepository.save(Like.builder().articleId(articleId).userId(userId).build());
-      articleRepository.increaseLikesById(articleId);
+  public void likeArticle(Integer articleId, HttpServletRequest httpServletRequest) {
+    Integer userId = JwtUtil.getIdFromToken(httpServletRequest);
+    likeRepository.save(Like.builder().articleId(articleId).userId(userId).build());
+    articleRepository.increaseLikesById(articleId);
   }
 
-  public void bookmarkArticle(Integer articleId, Integer userId) {
+  public void bookmarkArticle(Integer articleId, HttpServletRequest httpServletRequest) {
+    Integer userId = JwtUtil.getIdFromToken(httpServletRequest);
     bookmarkRepository.save(Bookmark.builder().articleId(articleId).userId(userId).build());
   }
 
-  public void deleteLikeArticle(Integer articleId, Integer userId) {
+  public void deleteLikeArticle(Integer articleId, HttpServletRequest httpServletRequest) {
+    Integer userId = JwtUtil.getIdFromToken(httpServletRequest);
     likeRepository.deleteByArticleIdAndUserId(userId, articleId);
     articleRepository.decreaseLikesById(articleId);
   }
 
-  public void deleteBookmarkArticle(Integer articleId, Integer userId) {
+  public void deleteBookmarkArticle(Integer articleId, HttpServletRequest httpServletRequest) {
+    Integer userId = JwtUtil.getIdFromToken(httpServletRequest);
     bookmarkRepository.deleteByArticleIdAndUserId(userId, articleId);
   }
 
