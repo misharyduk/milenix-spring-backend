@@ -1,83 +1,62 @@
-//package com.project.milenix.authentication_service.service;
-//
-//import com.project.milenix.authentication_service.dto.AuthenticationRequestDto;
-//import com.project.milenix.authentication_service.dto.AuthenticationResponse;
-//import com.project.milenix.authentication_service.model.Role;
-//import com.project.milenix.user_service.exception.EmailNotUniqueException;
-//import com.project.milenix.user_service.user.controller.UserController;
-//import com.project.milenix.user_service.user.controller.UserDevController;
-//import com.project.milenix.user_service.user.dto.UserAuthResponseDto;
-//import com.project.milenix.user_service.user.dto.UserRequestDto;
-//import com.project.milenix.authentication_service.model.UserDetailsImpl;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.security.authentication.AuthenticationManager;
-//import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-//import org.springframework.security.core.userdetails.UsernameNotFoundException;
-//import org.springframework.security.crypto.password.PasswordEncoder;
-//import org.springframework.stereotype.Service;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class AuthenticationService {
-//
-//  private final UserController userController;
-//  private final UserDevController userDevController;
-//  private final PasswordEncoder passwordEncoder;
-//  private final JwtService jwtService;
-//  private final AuthenticationManager authenticationManager;
-//
-//  public AuthenticationResponse register(UserRequestDto request) throws EmailNotUniqueException {
-//    String encodePassword = passwordEncoder.encode(request.getPassword());
-//    UserAuthResponseDto userResponse = UserAuthResponseDto.builder()
-//            .email(request.getEmail())
-//            .firstName(request.getFirstName())
-//            .lastName(request.getLastName())
-//            .password(encodePassword)
-//            .role(Role.USER.name())
-//            .build();
-//
-//    Integer userId = userDevController.registerUser(UserRequestDto.builder().firstName(
-//                    userResponse.getFirstName()).lastName(userResponse.getLastName())
-//            .email(userResponse.getEmail()).password(userResponse.getPassword())
-//            .build());
-//
-//    UserDetailsImpl userDetails = getUserDetails(userResponse);
-//
-//    String jwtToken = jwtService.generateToken(userDetails);
-//    return AuthenticationResponse.builder()
-//            .id(userId)
-//        .token(jwtToken)
-//        .build();
-//  }
-//
-//  public AuthenticationResponse authenticate(AuthenticationRequestDto request) {
-//
-//    authenticationManager.authenticate(
-//      new UsernamePasswordAuthenticationToken(
-//          request.getEmail(),
-//          request.getPassword()
-//      )
-//    );
-//
-//    UserAuthResponseDto userFromDb = userDevController.getByEmailToAuthenticate(request.getEmail());
-//
-//    if(userFromDb.getId() == 0)
-//      throw new UsernameNotFoundException("User with email " + request.getEmail() + " is not found");
-//
-//    UserDetailsImpl userDetails = getUserDetails(userFromDb);
-//
-//    var jwtToken = jwtService.generateToken(userDetails);
-//    return AuthenticationResponse.builder()
-//            .id(userFromDb.getId())
-//        .token(jwtToken)
-//        .build();
-//  }
-//
-//  private UserDetailsImpl getUserDetails(UserAuthResponseDto request) {
-//    return UserDetailsImpl.builder()
-//        .username(request.getEmail())
-//        .password(request.getPassword())
-//        .role(Role.valueOf(request.getRole().toUpperCase()))
-//        .build();
-//  }
-//}
+package com.project.milenix.authentication_service.service;
+
+import com.project.milenix.article_service.article.model.Article;
+import com.project.milenix.article_service.article.repo.ArticleRepository;
+import com.project.milenix.article_service.exception.ArticleException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@RequiredArgsConstructor
+@Service
+public class AuthenticationService {
+
+    private final ArticleRepository articleRepository;
+
+    public boolean hasAccessById(Integer userId, HttpServletRequest request){
+        String tokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String jwtToken = tokenHeader.replace("Bearer ", "");
+        Integer subjectId = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor("securitysecuritysecuritysecuritysecurity".getBytes()))
+                .build()
+                .parseClaimsJws(jwtToken)
+                .getBody()
+                .get("id", Integer.class);
+        return subjectId.equals(userId);
+    }
+
+    public boolean hasAccessByUsername(String username, HttpServletRequest request){
+        String tokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String jwtToken = tokenHeader.replace("Bearer ", "");
+        String subjectUsername = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor("securitysecuritysecuritysecuritysecurity".getBytes()))
+                .build()
+                .parseClaimsJws(jwtToken)
+                .getBody()
+                .getSubject();
+        return subjectUsername.equals(username);
+    }
+
+    public boolean hasAccessByEmail(String email, HttpServletRequest request){
+        String tokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String jwtToken = tokenHeader.replace("Bearer ", "");
+        String subjectEmail = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor("securitysecuritysecuritysecuritysecurity".getBytes()))
+                .build()
+                .parseClaimsJws(jwtToken)
+                .getBody()
+                .get("email", String.class);
+        return subjectEmail.equals(email);
+    }
+
+    public boolean hasAccessToArticleById(Integer articleId, HttpServletRequest request) throws ArticleException {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new ArticleException("Cannot find article"));
+        return hasAccessById(article.getAuthor().getId(), request);
+    }
+}

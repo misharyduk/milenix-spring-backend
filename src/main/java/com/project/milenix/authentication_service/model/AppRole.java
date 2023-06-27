@@ -12,10 +12,11 @@ import static com.project.milenix.authentication_service.model.AppAuthority.*;
 
 public enum AppRole {
     USER(Sets.newHashSet(
-            ARTICLE_READ, ARTICLE_ADD, ARTICLE_UPDATE, ARTICLE_DELETE,
-            USER_READ, USER_UPDATE, USER_DELETE,
-            CATEGORY_READ, CATEGORY_READ_ALL,
-            ARTICLE_LIKE, ARTICLE_BOOKMARK
+            ARTICLE_READ, /*ARTICLE_ADD, ARTICLE_UPDATE, ARTICLE_DELETE,*/
+            USER_READ,
+//            USER_UPDATE, USER_DELETE,
+            CATEGORY_READ, CATEGORY_READ_ALL
+//            ARTICLE_LIKE, ARTICLE_BOOKMARK
     )),
     MODERATOR(Sets.newHashSet(
             ARTICLE_READ, ARTICLE_READ_ALL, ARTICLE_ADD, ARTICLE_UPDATE, ARTICLE_DELETE,

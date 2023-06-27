@@ -6,7 +6,9 @@ import com.project.milenix.article_service.article.service.ArticleService;
 import com.project.milenix.article_service.article.service.TagService;
 import com.project.milenix.article_service.exception.ArticleException;
 import com.project.milenix.article_service.article.dto.EntityArticleResponseDto;
+import com.project.milenix.authentication_service.service.AuthenticationService;
 import com.project.milenix.file.service.ArticleFileStorageService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,7 @@ public class ArticleController {
   private final ArticleService articleService;
   private final ArticleFileStorageService fileStorageService;
   private final TagService tagService;
+  private final AuthenticationService authenticationService;
 
   @GetMapping
   @PreAuthorize("hasAuthority('article:read:all')")
@@ -41,12 +44,13 @@ public class ArticleController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAuthority('article:add')")
+  @PreAuthorize("@authenticationService.hasAccessById(#articleRequestDto.authorId, #httpServletRequest) || hasAuthority('article:update')")
   @ResponseStatus(HttpStatus.CREATED)
   public Integer saveArticle(@Valid ArticleRequestDto articleRequestDto,
                              @RequestParam("mainImage")MultipartFile mainImage,
                              @RequestParam(value = "images", required = false)MultipartFile[] images,
-                             @RequestParam(value = "tags", required = false) String[] tags){
+                             @RequestParam(value = "tags", required = false) String[] tags,
+                             HttpServletRequest httpServletRequest){
 
     Integer articleId = articleService.saveArticle(articleRequestDto, mainImage.getOriginalFilename());
     String fileName = fileStorageService.storeFile(articleId, mainImage);
@@ -64,12 +68,13 @@ public class ArticleController {
   }
 
   @PutMapping("{id}")
-  @PreAuthorize("hasAuthority('article:update')") // TODO: check use in SecurityConfig
+  @PreAuthorize("@authenticationService.hasAccessToArticleById(#id, #httpServletRequest) || hasAuthority('article:update')")
   @ResponseStatus(HttpStatus.OK)
   public EntityArticleResponseDto updateArticle(@PathVariable("id") Integer id, @RequestParam(required = false) ArticleRequestDto articleRequestDto,
                                                 @RequestParam(value = "mainImage", required = false)MultipartFile file,
                                                 @RequestParam(value = "images", required = false)MultipartFile[] images,
-                                                @RequestParam(value = "tags", required = false) String[] tags)
+                                                @RequestParam(value = "tags", required = false) String[] tags,
+                                                HttpServletRequest httpServletRequest)
       throws ArticleException {
     // TODO: handle exception
 
@@ -92,9 +97,9 @@ public class ArticleController {
   }
 
   @DeleteMapping("{id}")
-  @PreAuthorize("hasAuthority('article:delete')") // TODO: check use in SecurityConfig
+  @PreAuthorize("@authenticationService.hasAccessToArticleById(#id, #httpServletRequest) || hasAuthority('article:delete')")
   @ResponseStatus(HttpStatus.OK)
-  public void deleteArticle(@PathVariable("id") Integer id) throws ArticleException {
+  public void deleteArticle(@PathVariable("id") Integer id, HttpServletRequest httpServletRequest) throws ArticleException {
     // TODO: handle exception
 
     articleService.deleteArticle(id);
@@ -110,34 +115,38 @@ public class ArticleController {
   }
 
   @PostMapping("{articleId}/like")
-  @PreAuthorize("hasAuthority('article:like')")
+  @PreAuthorize("@authenticationService.hasAccessById(#userId, #httpServletRequest) || hasAuthority('article:like')")
   @ResponseStatus(HttpStatus.OK)
   public void likeArticle(@PathVariable("articleId") Integer articleId,
-                          @RequestParam("userId") Integer userId){
+                          @RequestParam("userId") Integer userId, // TODO fetch user from JWT token not from request
+                          HttpServletRequest httpServletRequest){
     articleService.likeArticle(articleId, userId);
   }
 
   @PostMapping("{articleId}/bookmark")
-  @PreAuthorize("hasAuthority('article:bookmark')")
+  @PreAuthorize("@authenticationService.hasAccessById(#userId, #httpServletRequest) || hasAuthority('article:bookmark')")
   @ResponseStatus(HttpStatus.OK)
   public void bookmarkArticle(@PathVariable("articleId") Integer articleId,
-                          @RequestParam("userId") Integer userId){
+                              @RequestParam("userId") Integer userId, // TODO fetch user from JWT token not from request
+                              HttpServletRequest httpServletRequest){
     articleService.bookmarkArticle(articleId, userId);
   }
 
   @DeleteMapping("{articleId}/like")
-  @PreAuthorize("hasAuthority('article:like')")
+  @PreAuthorize("@authenticationService.hasAccessToArticleById(#articleId, #httpServletRequest) || hasAuthority('article:like')")
   @ResponseStatus(HttpStatus.OK)
   public void deleteLikeArticle(@PathVariable("articleId") Integer articleId,
-                          @RequestParam("userId") Integer userId){
+                                @RequestParam("userId") Integer userId, // TODO fetch user from JWT token not from request
+                                HttpServletRequest httpServletRequest){ // TODO get user from JWT token
     articleService.deleteLikeArticle(articleId, userId);
   }
 
   @DeleteMapping("{articleId}/bookmark")
-  @PreAuthorize("hasAuthority('article:bookmark')")
+  @PreAuthorize("@authenticationService.hasAccessToArticleById(#articleId, #httpServletRequest) || hasAuthority('article:bookmark')")
   @ResponseStatus(HttpStatus.OK)
   public void deleteBookmarkArticle(@PathVariable("articleId") Integer articleId,
-                              @RequestParam("userId") Integer userId) {
+                                    @RequestParam("userId") Integer userId,
+                                    HttpServletRequest httpServletRequest) { // TODO get user from JWT token
     articleService.deleteBookmarkArticle(articleId, userId);
   }
 

@@ -16,7 +16,8 @@ public class ChatGPTController {
 
     private final ChatGPTService chatGPTService;
 
-    @PreAuthorize("hasAuthority('article:write')")
+//    @PreAuthorize("@authenticationService.hasAccessById(#articleRequestDto.authorId, #httpServletRequest) || hasAuthority('article:add')")
+//    @PreAuthorize("hasAuthority('article:write')")
     @MessageMapping("/get-chat-categories")
     @SendTo("/topic/chat-topic")
     public List<String> categories(CharContentRequestDto dto) throws Exception{

@@ -2,6 +2,7 @@ package com.project.milenix.authentication_service.config;
 
 import com.project.milenix.authentication_service.filter.AuthenticationFilter;
 import com.project.milenix.authentication_service.filter.JwtFilter;
+import com.project.milenix.user_service.user.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,12 +36,13 @@ public class SecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
     @Bean
     public SecurityFilterChain configure(HttpSecurity http) throws Exception{
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .addFilter(new AuthenticationFilter(authenticationManager()))
+                .addFilter(new AuthenticationFilter(authenticationManager(), userRepository))
                 .addFilterAfter(new JwtFilter(), AuthenticationFilter.class)
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
@@ -56,6 +58,7 @@ public class SecurityConfig {
                         "/api/v1/users/**", "/api/v1/users/pagination", "/api/v1/users/search").permitAll()
                 .requestMatchers(POST, "/login/**", "/api/v1/auth/token/refresh/**", "/api/v1/auth/register/**").permitAll()
                 .requestMatchers(GET, "/api/v1/auth/mail/verification/**").permitAll()
+                .requestMatchers("/get-chat-categories/**").permitAll()
                 .anyRequest().authenticated();
 //                .and()
 //                .httpBasic(Customizer.withDefaults());

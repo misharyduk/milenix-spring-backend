@@ -18,7 +18,7 @@ public class ArticleRequestDto {
     @NotNull(message = "The content should not be empty")
     @NotEmpty(message = "The content should not be empty")
     private String content;
-    private Integer authorId;
+    private Integer authorId; // TODO get user from JWT token
     private Integer categoryId;
 
 
