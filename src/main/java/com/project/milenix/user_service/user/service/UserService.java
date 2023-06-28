@@ -27,11 +27,17 @@ public class UserService extends UserServiceCommon {
     private final UserPaginationParametersValidator paramsValidator;
     private final PasswordEncoder passwordEncoder;
 
-    public User getUser(Integer id) throws CustomUserException {
+    public User getUser(Integer id) throws CustomUserException { // TODO naming
         return userRepository.findById(id)
                 .orElseThrow(() -> new CustomUserException("Cannot find user"));
     }
 
+    public User findUserByUsername(String username) throws CustomUserException { // TODO naming
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new CustomUserException("Cannot find user"));
+    }
+
+    // TODO naming
     public EntityUserResponseDto getUserById(Integer id, PaginationParameters paginationParameters) throws CustomUserException {
 
         paginationParameters.setField(paramsValidator.getCorrectValue(paginationParameters.getField()).getHqlField());

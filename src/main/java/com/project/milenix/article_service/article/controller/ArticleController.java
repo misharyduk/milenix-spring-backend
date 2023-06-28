@@ -1,6 +1,7 @@
 package com.project.milenix.article_service.article.controller;
 
 import com.project.milenix.PaginationParameters;
+import com.project.milenix.article_service.article.dto.ArticlePageResponseDto;
 import com.project.milenix.article_service.article.dto.ArticleRequestDto;
 import com.project.milenix.article_service.article.service.ArticleService;
 import com.project.milenix.article_service.article.service.TagService;
@@ -8,7 +9,9 @@ import com.project.milenix.article_service.exception.ArticleException;
 import com.project.milenix.article_service.article.dto.EntityArticleResponseDto;
 import com.project.milenix.authentication_service.service.AuthenticationService;
 import com.project.milenix.authentication_service.util.JwtUtil;
+import com.project.milenix.category_service.category.dto.EntityCategoryResponseDto;
 import com.project.milenix.file.service.ArticleFileStorageService;
+import com.project.milenix.user_service.exception.CustomUserException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -154,8 +157,25 @@ public class ArticleController {
 
   @GetMapping("hot")
   @ResponseStatus(HttpStatus.OK)
-  public List<EntityArticleResponseDto> getHotArticlesWithPagination(PaginationParameters params,
-                                                                     @RequestParam("size") Integer size){
+  public ArticlePageResponseDto getHotArticlesWithPagination(PaginationParameters params,
+                                                                     @RequestParam("size") Integer size){ // TODO do we really need another size parameter?
     return articleService.findHotArticles(params, size);
+  }
+
+  // Personalization
+  @GetMapping("interest")
+  @ResponseStatus(HttpStatus.OK) //TODO secure this
+  public ArticlePageResponseDto getMixArticlesByCategoriesOfUserInterest(PaginationParameters params,
+                                                                  HttpServletRequest request) throws CustomUserException {
+    Integer userId = JwtUtil.getIdFromToken(request);
+    return articleService.getMixArticlesByCategoriesOfUserInterest(userId, params);
+  }
+
+  @GetMapping("interest/list")
+  @ResponseStatus(HttpStatus.OK) //TODO secure this
+  public List<EntityCategoryResponseDto> getArticlesByCategoriesOfUserInterestInList(PaginationParameters params,
+                                                                                     HttpServletRequest request) throws CustomUserException {
+    Integer userId = JwtUtil.getIdFromToken(request);
+    return articleService.getArticlesByCategoriesOfUserInterestInList(userId, params);
   }
 }

@@ -13,7 +13,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/personalization")
+@RequestMapping("/api/v1/personalization") //TODO secure this
 public class UserPersonalizationController {
 
     private final UserPersonalizationService personalizationService;

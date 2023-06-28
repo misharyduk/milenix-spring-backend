@@ -54,4 +54,12 @@ public interface ArticleRepository extends JpaRepository<Article, Integer> {
             "ORDER BY :field DESC",
             nativeQuery = true)
     Page<Article> searchHotArticles(@Param("field") String field, @Param("limit") Integer limit, Pageable pageable);
+
+    @Query(value = "SELECT * FROM (SELECT a.* FROM article a WHERE a.category_id=:categoryId ORDER BY a.id DESC LIMIT :limit OFFSET :offset) AS sub_article " +
+            "ORDER BY :field DESC",
+            countQuery = "SELECT count(*) FROM (SELECT a.* FROM article a WHERE a.category_id=:categoryId ORDER BY a.id DESC LIMIT :limit OFFSET :offset) AS sub_article " +
+                    "ORDER BY :field DESC",
+            nativeQuery = true)
+    Page<Article> searchHotArticlesByCategory(@Param("categoryId") Integer categoryId, @Param("limit") Integer limit, @Param("offset") Integer offset,
+                                              @Param("field") String field, Pageable pageable);
 }

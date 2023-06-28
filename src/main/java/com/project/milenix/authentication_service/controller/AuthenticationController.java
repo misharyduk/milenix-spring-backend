@@ -9,7 +9,9 @@ import com.project.milenix.file.service.UserFileStorageService;
 import com.project.milenix.user_service.exception.CustomUserException;
 import com.project.milenix.user_service.exception.EmailNotUniqueException;
 import com.project.milenix.user_service.exception.UsernameNotUniqueException;
+import com.project.milenix.user_service.user.dto.EntityUserResponseDto;
 import com.project.milenix.user_service.user.dto.UserRequestDto;
+import com.project.milenix.user_service.user.model.User;
 import com.project.milenix.user_service.user.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -65,7 +67,7 @@ public class AuthenticationController {
 
   @PostMapping("token/refresh")
   @ResponseStatus(HttpStatus.OK)
-  public ResponseEntity<?> refreshToken(@RequestBody String refreshToken, HttpServletRequest request){
+  public ResponseEntity<?> refreshToken(@RequestBody String refreshToken, HttpServletRequest request) throws CustomUserException {
     if(Strings.isNullOrEmpty(refreshToken)){
       throw new RuntimeException("No token available");
     }
@@ -86,10 +88,13 @@ public class AuthenticationController {
 
     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
     if(userDetails != null){
+      User user = userService.findUserByUsername(userDetails.getUsername());
       String jwtAccessToken = Jwts.builder()
               .signWith(key)
               .setIssuer(request.getContextPath())
               .setSubject(username)
+              .claim("id", user.getId())
+              .claim("email", user.getEmail())
               .claim("authorities", userDetails.getAuthorities())
               .setIssuedAt(new Date())
               .setExpiration(new Date(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(3)))

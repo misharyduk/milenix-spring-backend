@@ -1,5 +1,6 @@
 package com.project.milenix.article_service.article.service;
 
+import com.project.milenix.article_service.article.dto.ArticlePageResponseDto;
 import com.project.milenix.article_service.article.dto.ArticleRequestDto;
 import com.project.milenix.article_service.article.model.Article;
 import com.project.milenix.article_service.article.model.Bookmark;
@@ -12,7 +13,12 @@ import com.project.milenix.article_service.article.dto.EntityArticleResponseDto;
 import com.project.milenix.article_service.exception.ArticleException;
 import com.project.milenix.article_service.util.ArticlePaginationParametersValidator;
 import com.project.milenix.authentication_service.util.JwtUtil;
+import com.project.milenix.category_service.category.dto.CategoryRequestDto;
+import com.project.milenix.category_service.category.dto.EntityCategoryResponseDto;
+import com.project.milenix.category_service.category.model.Category;
 import com.project.milenix.category_service.category.service.CategoryService;
+import com.project.milenix.user_service.exception.CustomUserException;
+import com.project.milenix.user_service.user.model.User;
 import com.project.milenix.user_service.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +44,7 @@ public class ArticleService extends ArticleCommonService{
   private final ArticlePaginationParametersValidator paramsValidator;
   private final UserService userService;
   private final CategoryService categoryService;
+  private final ArticleDevService articleDevService;
 
   public EntityArticleResponseDto getArticle(Integer id) throws ArticleException{
     // TODO: handle exception
@@ -159,7 +166,7 @@ public class ArticleService extends ArticleCommonService{
     bookmarkRepository.deleteByArticleIdAndUserId(userId, articleId);
   }
 
-  public List<EntityArticleResponseDto> findHotArticles(PaginationParameters params, Integer size) {
+  public ArticlePageResponseDto findHotArticles(PaginationParameters params, Integer size) { // TODO delete params
 
     Page<Article> pageOfArticles = articleRepository.searchHotArticles("number_of_views", size,
             PageRequest.of(0, Integer.MAX_VALUE).withSort(Sort.by(Sort.Direction.DESC, "number_of_views")));
@@ -171,6 +178,76 @@ public class ArticleService extends ArticleCommonService{
             })
             .collect(Collectors.toList());
 
-    return getListOfArticleDTOS(articles);
+    List<EntityArticleResponseDto> listOfArticleDTOS = getListOfArticleDTOS(articles);
+    return ArticlePageResponseDto.builder()
+            .page(0)
+            .pageSize(pageOfArticles.getSize())
+            .totalElements(pageOfArticles.getTotalElements())
+            .totalPages(pageOfArticles.getTotalPages())
+            .articles(listOfArticleDTOS)
+            .build();
+  }
+
+  public ArticlePageResponseDto findHotArticlesByCategory(Integer categoryId, PaginationParameters params){
+
+    Page<Article> pageOfArticles = articleRepository.searchHotArticlesByCategory(categoryId,  params.getPageSize(), params.getPageSize() * (params.getPage() - 1), "number_of_views",
+            PageRequest.of(0, Integer.MAX_VALUE).withSort(Sort.by(Sort.Direction.DESC, "number_of_views")));
+
+    List<Article> articles = pageOfArticles.stream()
+            .peek(article -> {
+              if(article.getContent().length() > 255)
+                article.setContent(article.getContent().substring(0, 255)  + "...");
+            })
+            .collect(Collectors.toList());
+
+    List<EntityArticleResponseDto> listOfArticleDTOS = getListOfArticleDTOS(articles);
+    return ArticlePageResponseDto.builder()
+            .page(params.getPage())
+            .pageSize(pageOfArticles.getSize())
+            .totalElements(pageOfArticles.getTotalElements())
+            .totalPages(pageOfArticles.getTotalPages())
+            .articles(listOfArticleDTOS)
+            .build();
+  }
+
+  public ArticlePageResponseDto getMixArticlesByCategoriesOfUserInterest(Integer userId, PaginationParameters params) throws CustomUserException {
+    User user = userService.getUser(userId);
+    Set<Category> interestCategoriesSet = user.getInterestCategories();
+    List<Category> interestCategories = interestCategoriesSet.stream().toList();
+    int numberOfArticlesOfEachCategory = params.getPageSize() / interestCategories.size();
+    List<EntityArticleResponseDto> articles = new ArrayList<>();
+    long totalElements = 0;
+    int totalPages = 0;
+    for(int i = 0; i < interestCategories.size(); i++){
+      Category category = interestCategories.get(i);
+      int currentNumberOfArticles = (articles.size() * i) % numberOfArticlesOfEachCategory;
+      ArticlePageResponseDto articlesPageByCategory = findHotArticlesByCategory(category.getId(),
+              PaginationParameters.builder().page(params.getPage()).pageSize(numberOfArticlesOfEachCategory + currentNumberOfArticles).build());
+      totalElements += articlesPageByCategory.getTotalElements();
+      totalPages += articlesPageByCategory.getTotalPages();
+      articles.addAll(articlesPageByCategory.getArticles());
+    }
+    Collections.shuffle(articles);
+    return ArticlePageResponseDto.builder()
+            .page(params.getPage())
+            .pageSize(articles.size())
+            .totalPages(totalPages)
+            .totalElements(totalElements)
+            .articles(articles)
+            .build();
+  }
+
+  public List<EntityCategoryResponseDto> getArticlesByCategoriesOfUserInterestInList(Integer userId, PaginationParameters params) throws CustomUserException {
+    User user = userService.getUser(userId);
+    Set<Category> interestCategoriesSet = user.getInterestCategories();
+    List<Category> interestCategories = interestCategoriesSet.stream().toList();
+    List<EntityCategoryResponseDto> articlesCategoriesList = new ArrayList<>();
+    for (Category category : interestCategories) {
+      ArticlePageResponseDto articlesPageByCategory = findHotArticlesByCategory(category.getId(), params);
+      Collections.shuffle(articlesPageByCategory.getArticles());
+      EntityCategoryResponseDto entityCategoryResponseDto = new EntityCategoryResponseDto(category.getId(), category.getName(), articlesPageByCategory);
+      articlesCategoriesList.add(entityCategoryResponseDto);
+    }
+    return articlesCategoriesList;
   }
 }
