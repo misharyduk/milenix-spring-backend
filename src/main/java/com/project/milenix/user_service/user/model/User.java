@@ -2,12 +2,16 @@ package com.project.milenix.user_service.user.model;
 
 import com.project.milenix.article_service.article.dto.ArticlePageResponseDto;
 import com.project.milenix.authentication_service.model.AppRole;
+import com.project.milenix.category_service.category.dto.EntityCategoryResponseDto;
+import com.project.milenix.category_service.category.model.Category;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -39,6 +43,8 @@ public class User implements UserDetails {
 //    private List<EntityArticleResponseDto> articles = new ArrayList<>();
     @Transient
     private ArticlePageResponseDto page;
+    @ManyToMany
+    private Set<Category> interestCategories;
     private boolean isAccountNonExpired;
     private boolean isAccountNonLocked;
     private boolean isCredentialsNonExpired;
