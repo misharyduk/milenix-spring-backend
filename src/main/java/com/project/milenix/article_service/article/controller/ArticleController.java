@@ -117,7 +117,7 @@ public class ArticleController {
   }
 
   @PostMapping("{articleId}/like")
-  @PreAuthorize("@authenticationService.hasAccessById(#userId, #httpServletRequest) || hasAuthority('article:like')")
+  @PreAuthorize("hasAuthority('article:like')")
   @ResponseStatus(HttpStatus.OK)
   public void likeArticle(@PathVariable("articleId") Integer articleId,
 //                          @RequestParam("userId") Integer userId, // TODO fetch user from JWT token not from request
@@ -126,7 +126,7 @@ public class ArticleController {
   }
 
   @PostMapping("{articleId}/bookmark")
-  @PreAuthorize("@authenticationService.hasAccessById(#userId, #httpServletRequest) || hasAuthority('article:bookmark')")
+  @PreAuthorize("hasAuthority('article:bookmark')")
   @ResponseStatus(HttpStatus.OK)
   public void bookmarkArticle(@PathVariable("articleId") Integer articleId,
 //                              @RequestParam("userId") Integer userId, // TODO fetch user from JWT token not from request
@@ -135,7 +135,7 @@ public class ArticleController {
   }
 
   @DeleteMapping("{articleId}/like")
-  @PreAuthorize("@authenticationService.hasAccessToArticleById(#articleId, #httpServletRequest) || hasAuthority('article:like')")
+  @PreAuthorize("hasAuthority('article:like')")
   @ResponseStatus(HttpStatus.OK)
   public void deleteLikeArticle(@PathVariable("articleId") Integer articleId,
 //                                @RequestParam("userId") Integer userId, // TODO fetch user from JWT token not from request
@@ -144,7 +144,7 @@ public class ArticleController {
   }
 
   @DeleteMapping("{articleId}/bookmark")
-  @PreAuthorize("@authenticationService.hasAccessToArticleById(#articleId, #httpServletRequest) || hasAuthority('article:bookmark')")
+  @PreAuthorize("hasAuthority('article:bookmark')")
   @ResponseStatus(HttpStatus.OK)
   public void deleteBookmarkArticle(@PathVariable("articleId") Integer articleId,
 //                                    @RequestParam("userId") Integer userId, // TODO get user from JWT token

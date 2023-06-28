@@ -129,7 +129,7 @@ public class UserController {
 
   // LIKES AND BOOKMARKS
   @GetMapping("{id}/articles/likes")
-  @PreAuthorize("@authenticationService.hasAccessById(#id, #httpServletRequest) || hasAuthority('article:like')")
+  @PreAuthorize("@authenticationService.hasAccessById(#id, #httpServletRequest)")
   @ResponseStatus(HttpStatus.OK)
   public EntityUserResponseDto getUserArticlesLike(@PathVariable("id") Integer id, // TODO find out if we really need to return user dto. maybe list of articles dto?
                                                    PaginationParameters paginationParameters,
@@ -138,7 +138,7 @@ public class UserController {
   }
 
   @GetMapping("{id}/articles/bookmarks")
-  @PreAuthorize("@authenticationService.hasAccessById(#id, #httpServletRequest) || hasAuthority('article:bookmark')")
+  @PreAuthorize("@authenticationService.hasAccessById(#id, #httpServletRequest)")
   @ResponseStatus(HttpStatus.OK)
   public EntityUserResponseDto getUserArticlesBookmarks(@PathVariable("id") Integer id,
                                                         PaginationParameters paginationParameters,
